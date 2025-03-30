@@ -1,0 +1,4 @@
+/misc/keys.env
+/query_stuff/ftc_data.sqlite
+/query_stuff/graphql.config.yml
+/query_stuff/queries.graphql
