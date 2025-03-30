@@ -36,16 +36,17 @@ def formatTeamEventData(i: SimpleNamespace) -> EventData:
     name = event.name
     level = event.type
     time = event.start
+    started = event.started
 
     csc = f"{event.location.city}, {event.location.state}, {event.location.country}."
     loc = LocationValues(csc, event.location.loc)
 
     if not stats:
-        return EventData(name, level, time, loc)
+        return EventData(name, level, time, started, loc)
 
     team_event_stats = EventStats(stats.rank, stats.w, stats.l, stats.t)
 
-    return EventData(name, level, time, loc, team_event_stats)
+    return EventData(name, level, time, started, loc, team_event_stats)
 
 def formatEventInfo(event: SimpleNamespace) -> EventData:
     event = event.event

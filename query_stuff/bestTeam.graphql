@@ -39,6 +39,12 @@
                                 country
                             }
                             start
+                            started
+                            awards {
+                                type
+                                teamNumber
+                                placement
+                            }
                         }
                         stats {
                             ... on TeamEventStats2024 {

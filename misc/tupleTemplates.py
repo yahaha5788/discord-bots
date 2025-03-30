@@ -12,16 +12,23 @@ class LocationValues(NamedTuple):
     cityStateCountry: str
     venue: str = None
 
+class Award(NamedTuple):
+    type: str
+    placement: int
+    teamNumber: int
+
 class EventStats(NamedTuple):
     event_rank: int
     w: int
     l: int
     t: int
+    awards: list[Award]
 
 class EventData(NamedTuple):
     name: str
     event_type: str
     start: str
+    started: bool
 
     location: LocationValues
     stats: EventStats = None
@@ -40,7 +47,8 @@ class TeamQStats(NamedTuple):
 class BestTeam(NamedTuple):
     info: TeamInfo
     stats: quickStats
-    events: list
+    events: list[EventData]
+
     
 class QueryResult(NamedTuple):
     result: NamedTuple
@@ -55,3 +63,4 @@ class TeamLogistics(NamedTuple):
     rookie: str
     website: str = None
     sponsors: list = None
+

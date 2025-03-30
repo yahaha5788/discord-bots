@@ -1,0 +1,18 @@
+{
+    teamByNumber(number: 14988) {
+        name
+        number
+        events(season: 2024) {
+            event {
+                started
+
+            }
+            awards {
+                type
+                teamNumber
+                placement
+            }
+        }
+
+    }
+}
