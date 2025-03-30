@@ -3,6 +3,7 @@ import query_stuff.queries as queries
 from discord.ext import commands
 import discord.utils
 from random import randint
+from misc.utilMethods import appendSuffix
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -12,6 +13,33 @@ bot = commands.Bot(command_prefix="$", intents=intents, activity=activity)
 
 gold = 'BBA53D'
 embed_color = int(gold, 16)
+
+def awardTemplate(award):
+    return f"{appendSuffix(award.placement)} place {award.type}\n"
+
+def eventTemplate(event):
+    if not event.stats:
+        return f"""
+**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**
+Type: {event.event_type}
+No stats for the event.
+"""
+    stats = f"""
+**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**
+Type: {event.event_type}
+Team's stats for the event:
+Rank: {event.stats.event_rank}
+Record: {event.stats.w} - {event.stats.l} - {event.stats.t}
+Awards:"""
+
+    if not event.stats.awards:
+        return stats + f" None\n"
+
+    stats = stats + f"\n"
+    for award in event.stats.awards:
+        stats = stats + awardTemplate(award)
+
+    return stats
 
 @bot.event
 async def on_ready():
@@ -34,17 +62,8 @@ Located in {location}
 
 Auto:    {auto}\nTeleOp:  {tele}\nEndgame: {endgame}\nNpTotal: {np}
     """
-
     for event in team_events:
-        add = f"""
-**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**
-Type: {event.event_type}
-Team's stats for the event:
-Rank: {event.stats.event_rank}
-Record: {event.stats.w} - {event.stats.l} - {event.stats.t}
-        """
-
-        desc = desc + add
+        desc = desc + eventTemplate(event)
 
     embed = discord.Embed(title=title, description=desc, color=embed_color)
 

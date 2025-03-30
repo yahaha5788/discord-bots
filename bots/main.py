@@ -14,15 +14,4 @@ if __name__ == "__main__":
     harold_key = os.getenv('HAROLD_KEY')
 
 
-    async def runAll():
-        try:
-            await asyncio.gather(
-                polaroid.start(polaroid_key),
-                harold.start(harold_key)
-            )
-        except KeyboardInterrupt:
-            await polaroid.close()
-            await harold.close()
-
-
-    asyncio.run(runAll())
+    harold.run(harold_key)

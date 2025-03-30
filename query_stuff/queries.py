@@ -5,7 +5,7 @@ from misc.tupleTemplates import QueryResult, BestTeam, TeamQStats
 def getBestTeam(region) -> QueryResult:
     query = """
 {
-    tepRecords(region: """+region+""", season: 2024, skip: 0, take: 1, sortDir: Desc, sortBy: "opr") {
+    tepRecords(region: All, season: 2024, skip: 0, take: 1, sortDir: Desc, sortBy: "opr") { #gets the best team
         data {
             data {
                 team {
@@ -45,6 +45,12 @@ def getBestTeam(region) -> QueryResult:
                                 country
                             }
                             start
+                            started
+                            awards {
+                                type
+                                teamNumber
+                                placement
+                            }
                         }
                         stats {
                             ... on TeamEventStats2024 {
@@ -77,10 +83,10 @@ def getBestTeam(region) -> QueryResult:
 
     events = team.events #this is a list, not namespace
     team_events = []
-    team_events_dict = {}
+
 
     for event in events:
-        ev = queryUtils.formatTeamEventData(event)
+        ev = queryUtils.formatTeamEventData(event, team.number)
         team_events.append(ev)
         
         
