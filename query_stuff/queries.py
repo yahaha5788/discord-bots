@@ -81,6 +81,7 @@ def getBestTeam(region) -> QueryResult:
 
     for event in events:
         ev = queryUtils.formatTeamEventData(event)
+        team_events.append(ev)
         
         
     bt: BestTeam = BestTeam(team_info, qStats, team_events) #teehee type annotations
@@ -90,25 +91,25 @@ def getBestTeam(region) -> QueryResult:
 def teamQuickStats(number) -> QueryResult:
     query = """
 {
-    teamByNumber(number: 14988) {
+    teamByNumber(number: """+number+""") {
         name
         number
         quickStats(season: 2024) {
             auto {
                 rank
-                value
+                opr: value
             }
             dc {
                 rank
-                value
+                opr: value
             }
             eg {
                 rank
-                value
+                opr: value
             }
             tot {
                 rank
-                value
+                np: value
             }
         }
     }
@@ -125,7 +126,7 @@ def teamQuickStats(number) -> QueryResult:
 
     qstats = data.quickStats
     auto = qstats.auto
-    tele = qstats.tele
+    tele = qstats.dc
     endgame = qstats.eg
     np = qstats.tot
 

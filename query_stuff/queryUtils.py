@@ -6,9 +6,6 @@ import requests_cache
 from misc.tupleTemplates import quickStats, LocationValues, EventData, EventStats, TeamInfo
 from misc.utilMethods import getCodeDesc, appendSuffix
 
-
-requests_cache.install_cache('ftc_data', expire_after=43200)
-
 def parseQuery(query):
     response = requests.post(url="https://api.ftcscout.org/graphql", json={"query": query})
     if response.status_code == 200:
@@ -22,13 +19,13 @@ def parseQuery(query):
         return success, f"Request did not return code 200, instead returned code {response.status_code}: {getCodeDesc(response.status_code)}"
 
 def formatQStats(auto: SimpleNamespace, teleop: SimpleNamespace, endgame: SimpleNamespace, np: SimpleNamespace) -> quickStats:
-    auto = f"{round(auto.opr)} | {appendSuffix(auto.rank)}"
+    auto = f"{round(auto.opr, 2)} | {appendSuffix(auto.rank)}"
 
-    teleOp = f"{round(teleop.opr)} | {appendSuffix(teleop.rank)}"
+    teleOp = f"{round(teleop.opr, 2)} | {appendSuffix(teleop.rank)}"
 
-    endGame = f"{round(endgame.opr)} | {appendSuffix(endgame.rank)}"
+    endGame = f"{round(endgame.opr, 2)} | {appendSuffix(endgame.rank)}"
 
-    npData = f"{round(np.np)} | {appendSuffix(np.rank)}"
+    npData = f"{round(np.np, 2)} | {appendSuffix(np.rank)}"
 
     return quickStats(auto, teleOp, endGame, npData)
 
