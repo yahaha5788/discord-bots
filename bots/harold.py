@@ -4,11 +4,11 @@ from discord.ext import commands
 import discord.utils
 from random import randint
 
-
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-bot = commands.Bot(command_prefix="$", intents=intents)
+activity = discord.Activity(type=discord.ActivityType.listening, name="the sounds of lifts skipping")
+bot = commands.Bot(command_prefix="$", intents=intents, activity=activity)
 
 gold = 'BBA53D'
 embed_color = int(gold, 16)
@@ -69,16 +69,19 @@ async def quickstats(ctx, number):
 @bot.command(pass_context=True, aliases=['events'])
 async def teamevents(ctx, number):
     ...
+
 @bot.command(pass_cntext=True, aliases=['info'])
 async def teaminfo(ctx, number):
     ...
+
 @bot.command(pass_context=True, aliases=['8'])
 async def eightball(ctx):
     ...
+
 @bot.command(pass_context=True)
 async def dice(ctx, sides=6):
-    roll = randint(0, sides) #i don't remeber how discord emoticons work so fix this later
-    diceembed=discord.Embed(title=":game_die:", description=f"You rolled a **{roll}**")
-    ctx.send(embed=diceembed)
+    roll = randint(0, sides)
+    diceembed=discord.Embed(title=":game_die:", description=f"You rolled a **{roll}**", color=embed_color)
+    await ctx.send(embed=diceembed)
  
 
