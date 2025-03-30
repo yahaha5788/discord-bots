@@ -3,7 +3,7 @@ import requests
 from types import SimpleNamespace
 import requests_cache
 
-from misc.tupleTemplates import quickStats, locationValues, eventData, eventStats, teamInfo
+from misc.tupleTemplates import quickStats, LocationValues, EventData, EventStats, TeamInfo
 from misc.utilMethods import getCodeDesc, appendSuffix
 
 
@@ -32,7 +32,7 @@ def formatQStats(auto: SimpleNamespace, teleop: SimpleNamespace, endgame: Simple
 
     return quickStats(auto, teleOp, endGame, npData)
 
-def formatTeamEventData(i: SimpleNamespace) -> eventData:
+def formatTeamEventData(i: SimpleNamespace) -> EventData:
     event = i.event
     stats = i.stats
 
@@ -41,31 +41,31 @@ def formatTeamEventData(i: SimpleNamespace) -> eventData:
     time = event.start
 
     csc = f"{event.location.city}, {event.location.state}, {event.location.country}."
-    loc = locationValues(csc, event.location.loc)
+    loc = LocationValues(csc, event.location.loc)
 
     if not stats:
-        return eventData(name, level, time, loc)
+        return EventData(name, level, time, loc)
 
-    team_event_stats = eventStats(stats.rank, stats.w, stats.l, stats.t)
+    team_event_stats = EventStats(stats.rank, stats.w, stats.l, stats.t)
 
-    return eventData(name, level, time, loc, team_event_stats)
+    return EventData(name, level, time, loc, team_event_stats)
 
-def formatEventInfo(event: SimpleNamespace) -> eventData:
+def formatEventInfo(event: SimpleNamespace) -> EventData:
     event = event.event
     name = event.name
     level = event.type
     time = event.start
 
     csc = f"{event.location.city}, {event.location.state}, {event.location.country}."
-    loc = locationValues(csc, event.location.loc)
-    return eventData(name, level, time, loc)
+    loc = LocationValues(csc, event.location.loc)
+    return EventData(name, level, time, loc)
 
-def formatTeamInfo(team: SimpleNamespace) -> teamInfo:
+def formatTeamInfo(team: SimpleNamespace) -> TeamInfo:
     name = team.name
     number = team.number
     loc = team.location
 
     csc = f"{loc.city}, {loc.state}, {loc.country}."
-    location = locationValues(csc)
+    location = LocationValues(csc)
 
-    return teamInfo(name, number, location)
+    return TeamInfo(name, number, location)

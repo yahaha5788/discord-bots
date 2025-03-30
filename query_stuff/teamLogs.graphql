@@ -1,0 +1,16 @@
+{
+    teamByNumber(number: 14988) {
+        name
+        number
+        rookieYear
+        sponsors
+        schoolName
+        website
+        location {
+            country
+            state
+            city
+            venue
+        }
+    }
+}

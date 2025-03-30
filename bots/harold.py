@@ -1,5 +1,5 @@
 import discord
-from query_stuff import queries
+import query_stuff.queries as queries
 from discord.ext import commands
 import discord.utils
 from random import randint

@@ -1,8 +1,8 @@
-import queryUtils
-from misc.tupleTemplates import queryResult, bestTeam
+from . import queryUtils
+from misc.tupleTemplates import QueryResult, BestTeam, TeamQStats
 
 
-def getBestTeam(region) -> queryResult:
+def getBestTeam(region) -> QueryResult:
     query = """
 {
     tepRecords(region: """+region+""", season: 2024, skip: 0, take: 1, sortDir: Desc, sortBy: "opr") {
@@ -64,9 +64,9 @@ def getBestTeam(region) -> queryResult:
 
     success, data = queryUtils.parseQuery(query)
     if not success:
-        return queryResult(data, success)
+        return QueryResult(data, success)
 
-    team = data.data.tepRecords.data[0].data.team #what
+    team = data.data.tepRecords.data[0].data.team #i may kill graphql
     team_info = queryUtils.formatTeamInfo(team)
 
     autoData = team.qStats.Auto
@@ -83,36 +83,54 @@ def getBestTeam(region) -> queryResult:
         ev = queryUtils.formatTeamEventData(event)
         
         
-    bt = bestTeam(team_info, qStats, team_events)
+    bt: BestTeam = BestTeam(team_info, qStats, team_events) #teehee type annotations
     
-    return queryResult(bt, success)
+    return QueryResult(bt, success)
     
-def teamQuickStats(number):
+def teamQuickStats(number) -> QueryResult:
     query = """
 {
-    teamByNumber(number: """+number+""") {
+    teamByNumber(number: 14988) {
         name
         number
-        qStats: quickStats(season: 2024) {
-            Auto: auto {
-                rank: rank
-                opr: value
+        quickStats(season: 2024) {
+            auto {
+                rank
+                value
             }
-            TeleOp: dc {
-                rank: rank
-                opr: value
+            dc {
+                rank
+                value
             }
-            Endgame: eg {
-                rank: rank
-                opr: value
+            eg {
+                rank
+                value
             }
-            TotalNP: tot {
-                rank: rank
-                np: value
+            tot {
+                rank
+                value
             }
         }
     }
-}     
+}
     """
     
     success, data = queryUtils.parseQuery(query)
+    if not success:
+        return QueryResult(data, success)
+
+    data = data.data.teamByNumber
+    name = data.name
+    number = data.number
+
+    qstats = data.quickStats
+    auto = qstats.auto
+    tele = qstats.tele
+    endgame = qstats.eg
+    np = qstats.tot
+
+    qStats = queryUtils.formatQStats(auto, tele, endgame, np)
+
+    team_quickstats = TeamQStats(name, number, qStats)
+
+    return QueryResult(team_quickstats, success)

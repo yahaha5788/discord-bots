@@ -8,34 +8,50 @@ class quickStats(NamedTuple):
     endGameData: str
     NpData: str
 
-class locationValues(NamedTuple):
+class LocationValues(NamedTuple):
     cityStateCountry: str
     venue: str = None
 
-class eventStats(NamedTuple):
+class EventStats(NamedTuple):
     event_rank: int
     w: int
     l: int
     t: int
 
-class eventData(NamedTuple):
+class EventData(NamedTuple):
     name: str
     event_type: str
     start: str
 
-    location: locationValues
-    stats: eventStats = None
+    location: LocationValues
+    stats: EventStats = None
 
-class teamInfo(NamedTuple):
+class TeamInfo(NamedTuple):
     name: str
     number: int
-    loc: locationValues
+    loc: LocationValues = None
 
-class bestTeam(NamedTuple):
-    info: teamInfo
+class TeamQStats(NamedTuple):
+    name: str
+    number: str
+
+    qStats: quickStats
+
+class BestTeam(NamedTuple):
+    info: TeamInfo
     stats: quickStats
     events: list
     
-class queryResult(NamedTuple):
+class QueryResult(NamedTuple):
     result: NamedTuple
     success: bool
+
+class TeamLogistics(NamedTuple):
+    name: str
+    number: str
+
+    loc: LocationValues
+
+    rookie: str
+    website: str = None
+    sponsors: list = None
