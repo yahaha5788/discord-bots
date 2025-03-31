@@ -141,7 +141,7 @@ async def teamevents(ctx, number) -> Never:
 
     await ctx.send(embed=events_embed)
 
-@bot.command(pass_cntext=True,
+@bot.command(pass_context=True,
              aliases=['info', 'ti'],
              help="Command format: $teaminfo <number>",
              brief = "Gets information on a team",
