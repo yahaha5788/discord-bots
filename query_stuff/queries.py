@@ -13,6 +13,7 @@ def bestTeam(region: str) -> QueryResult:
                     number
                     name
                     location {
+                        venue
                         city
                         state
                         country
@@ -76,10 +77,10 @@ def bestTeam(region: str) -> QueryResult:
     team: SimpleNamespace = data.data.tepRecords.data[0].data.team #i may kill graphql
     team_info: Team = queryUtils.formatTeamInfo(team)
 
-    autoData: SimpleNamespace = team.qStats.auto
-    teleOpData: SimpleNamespace = team.qStats.TeledcOp
-    endGameData: SimpleNamespace = team.qStats.eg
-    npData: SimpleNamespace = team.qStats.np
+    autoData: SimpleNamespace = team.quickStats.auto
+    teleOpData: SimpleNamespace = team.quickStats.dc
+    endGameData: SimpleNamespace = team.quickStats.eg
+    npData: SimpleNamespace = team.quickStats.tot
     qStats: QuickStats = queryUtils.formatQStats(autoData, teleOpData, endGameData, npData)
 
     events: list[SimpleNamespace] = team.events #this is a list, not namespace
@@ -104,19 +105,19 @@ def teamQuickStats(number) -> QueryResult:
         quickStats(season: 2024) {
             auto {
                 rank
-                opr: value
+                value
             }
             dc {
                 rank
-                opr: value
+                value
             }
             eg {
                 rank
-                opr: value
+                value
             }
             tot {
                 rank
-                np: value
+                value
             }
         }
     }

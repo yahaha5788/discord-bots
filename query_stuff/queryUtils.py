@@ -70,7 +70,7 @@ def formatTeamInfo(team: SimpleNamespace) -> Team:
     name = team.name
     number = team.number
 
-    loc = formatLocationData(team.loaction)
+    loc = formatLocationData(team.location)
 
     return Team(name, number, loc)
 

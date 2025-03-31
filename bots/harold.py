@@ -63,7 +63,16 @@ def addSponsors(sponsors: list[str], string: str) -> str:
 
     return string
 
-@bot.command(pass_context=True, aliases=['topteam', 'bt'], help='Command format: $bestTeam <region>. If <region> is left blank, the default region is All.', description='Queries the best team from ftcscout.org with an optional region modifier to search within a given region', brief="Gets the best team from ftcscout.org")
+def setFooter(embed: discord.Embed):
+    embed.add_field(name="Links", value="[FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
+
+
+@bot.command(pass_context=True,
+             aliases=['topteam', 'bt'],
+             help='Command format: $bestTeam <region>. If <region> is left blank, the default region is All.',
+             description='Queries the best team from ftcscout.org with an optional region modifier to search within a given region',
+             brief="Gets the best team from ftcscout.org"
+             )
 async def bestteam(ctx, region='All') -> Never:
     data, success = queries.bestTeam(region)
     if not success:
@@ -83,10 +92,16 @@ Auto:    {auto}\nTeleOp:  {tele}\nEndgame: {endgame}\nNpTotal: {np}
         desc = desc + eventTemplate(event)
 
     embed = discord.Embed(title=title, description=desc, color=embed_color)
+    setFooter(embed)
 
     await ctx.send(embed=embed)
 
-@bot.command(pass_context=True, aliases=['qstats'])
+@bot.command(pass_context=True,
+             aliases=['qstats', 'qs'],
+             help="Command format: $quickstats <number>",
+             brief="Gets the Quick Stats (Auto, Teleop, Endgame, NP) of a team.",
+             description='Gets the Quick Stats (Auto, Teleop, Endgame, NP) of a given team by their number from ftcscout.org.'
+             )
 async def quickstats(ctx, number) -> Never:
     data, success = queries.teamQuickStats(number)
     if not success:
@@ -99,10 +114,16 @@ async def quickstats(ctx, number) -> Never:
     auto, tele, endgame, np = qstats
     desc = f"""Auto:    {auto}\nTeleOp:  {tele}\nEndgame: {endgame}\nNpTotal: {np}"""
     qStats_embed = discord.Embed(title=title, description=desc, color=embed_color)
+    setFooter(qStats_embed)
 
     await ctx.send(embed=qStats_embed)
 
-@bot.command(pass_context=True, aliases=['events'])
+@bot.command(pass_context=True,
+             aliases=['events', 'ev'],
+             help="Command format: $teamevents <number>",
+             brief="Gets all events a team has had or will have, and their stats.",
+             description='Gets all events and event stats of given team by their number from ftcscout.org.'
+             )
 async def teamevents(ctx, number) -> Never:
     data, success = queries.teamEvents(number)
     if not success:
@@ -116,10 +137,16 @@ async def teamevents(ctx, number) -> Never:
         desc = desc + eventTemplate(event)
 
     events_embed = discord.Embed(title=title, description=desc, color=embed_color)
+    setFooter(events_embed)
 
     await ctx.send(embed=events_embed)
 
-@bot.command(pass_cntext=True, aliases=['info'])
+@bot.command(pass_cntext=True,
+             aliases=['info', 'ti'],
+             help="Command format: $teaminfo <number>",
+             brief = "Gets information on a team",
+             description = 'Gets information on a team, like their rookie year or website link by their number from ftcscout.org'
+             )
 async def teaminfo(ctx, number) -> Never:
     data, success = queries.teamLogistics(number)
     if not success:
@@ -140,6 +167,7 @@ Sponsors:
     desc = addSponsors(data.sponsors, desc)
 
     info_embed = discord.Embed(title=title, description=desc, color=embed_color)
+    setFooter(info_embed)
 
     await ctx.send(embed=info_embed)
 
