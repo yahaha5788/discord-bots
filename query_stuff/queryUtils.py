@@ -2,7 +2,7 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.tupleTemplates import quickStats, LocationValues, EventData, EventStats, TeamInfo, Award
+from misc.tupleTemplates import QuickStats, Location, Event, EventStats, Team, Award
 from misc.utilMethods import getCodeDesc, appendSuffix
 
 def parseQuery(query):
@@ -17,58 +17,62 @@ def parseQuery(query):
         success = False
         return success, f"Request did not return code 200, instead returned code {response.status_code}: {getCodeDesc(response.status_code)}"
 
-def formatQStats(auto: SimpleNamespace, teleop: SimpleNamespace, endgame: SimpleNamespace, np: SimpleNamespace) -> quickStats:
-    auto = f"{round(auto.opr, 2)} | {appendSuffix(auto.rank)}"
+def formatQStats(auto: SimpleNamespace, teleop: SimpleNamespace, endgame: SimpleNamespace, np: SimpleNamespace) -> QuickStats:
+    auto = f"{round(auto.value, 2)} | {appendSuffix(auto.rank)}"
 
-    teleOp = f"{round(teleop.opr, 2)} | {appendSuffix(teleop.rank)}"
+    teleOp = f"{round(teleop.value, 2)} | {appendSuffix(teleop.rank)}"
 
-    endGame = f"{round(endgame.opr, 2)} | {appendSuffix(endgame.rank)}"
+    endGame = f"{round(endgame.value, 2)} | {appendSuffix(endgame.rank)}"
 
-    npData = f"{round(np.np, 2)} | {appendSuffix(np.rank)}"
+    npData = f"{round(np.value, 2)} | {appendSuffix(np.rank)}"
 
-    return quickStats(auto, teleOp, endGame, npData)
+    return QuickStats(auto, teleOp, endGame, npData)
 
-def formatTeamEventData(i: SimpleNamespace, number: int) -> EventData:
-    event = i.event
-    stats = i.stats
+def formatLocationData(loc: SimpleNamespace) -> Location:
+    csc = f"{loc.city}, {loc.state}, {loc.country}."
+    if not loc.venue:
+        return Location(csc)
 
-    name = event.name
-    level = event.type
-    time = event.start
-    started = event.started
+    return Location(csc, loc.venue)
 
-    csc = f"{event.location.city}, {event.location.state}, {event.location.country}."
-    loc = LocationValues(csc, event.location.loc)
+def formatTeamEventData(i: SimpleNamespace, number: int) -> Event:
+    event: SimpleNamespace = i.event
+    stats: SimpleNamespace = i.stats
+
+    name: str = event.name
+    level: str = event.type
+    time: str = event.start
+    started: bool = event.started
+
+    loc: Location = formatLocationData(event.location)
 
     if not stats:
-        return EventData(name, level, time, started, loc)
+        return Event(name, level, time, started, loc)
 
     awards: list[Award] = filterAwards(event.awards, number)
 
     team_event_stats = EventStats(stats.rank, stats.w, stats.l, stats.t, awards)
 
-    return EventData(name, level, time, started, loc, team_event_stats)
+    return Event(name, level, time, started, loc, team_event_stats)
 
-def formatEventInfo(event: SimpleNamespace) -> EventData:
-    event = event.event
-    name = event.name
-    level = event.type
-    time = event.start
-    started = event.started
+def formatEventInfo(ev: SimpleNamespace) -> Event:
+    event: SimpleNamespace = ev.event
+    name: str = event.name
+    level: str = event.type
+    time: str = event.start
+    started: bool = event.started
 
-    csc = f"{event.location.city}, {event.location.state}, {event.location.country}."
-    loc = LocationValues(csc, event.location.loc)
-    return EventData(name, level, time, started, loc)
+    loc: Location = formatLocationData(event.location)
 
-def formatTeamInfo(team: SimpleNamespace) -> TeamInfo:
+    return Event(name, level, time, started, loc)
+
+def formatTeamInfo(team: SimpleNamespace) -> Team:
     name = team.name
     number = team.number
-    loc = team.location
 
-    csc = f"{loc.city}, {loc.state}, {loc.country}."
-    location = LocationValues(csc)
+    loc = formatLocationData(team.loaction)
 
-    return TeamInfo(name, number, location)
+    return Team(name, number, loc)
 
 def filterAwards(awards: list[Award], number) -> list[Award]:
     return [award for award in awards if award.teamNumber == number]

@@ -2,17 +2,38 @@
     teamByNumber(number: 14988) {
         name
         number
+        location {
+            city
+            state
+            country
+            venue
+        }
         events(season: 2024) {
             event {
-                started
-
-            }
-            awards {
+                name
                 type
-                teamNumber
-                placement
+                location {
+                    loc: venue
+                    city
+                    state
+                    country
+                }
+                start
+                started
+                awards {
+                    type
+                    teamNumber
+                    placement
+                }
+            }
+            stats {
+                ... on TeamEventStats2024 {
+                    rank
+                    w: wins
+                    l: losses
+                    t: ties
+                }
             }
         }
-
     }
 }

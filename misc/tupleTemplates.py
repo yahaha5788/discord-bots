@@ -2,13 +2,13 @@ from typing import NamedTuple
 
 
 
-class quickStats(NamedTuple):
+class QuickStats(NamedTuple):
     autoData: str
     teleOpData: str
     endGameData: str
     NpData: str
 
-class LocationValues(NamedTuple):
+class Location(NamedTuple):
     cityStateCountry: str
     venue: str = None
 
@@ -24,43 +24,48 @@ class EventStats(NamedTuple):
     t: int
     awards: list[Award]
 
-class EventData(NamedTuple):
+class Event(NamedTuple):
     name: str
     event_type: str
     start: str
     started: bool
 
-    location: LocationValues
+    location: Location
     stats: EventStats = None
 
-class TeamInfo(NamedTuple):
+class Team(NamedTuple):
     name: str
     number: int
-    loc: LocationValues = None
+    loc: Location = None
+
+########################## QUERY RESULT CLASSES ########################
+
+class QueryResult(NamedTuple):
+    result: NamedTuple
+    success: bool
+
+class BestTeam(NamedTuple):
+    info: Team
+    stats: QuickStats
+    events: list[Event]
 
 class TeamQStats(NamedTuple):
     name: str
     number: str
 
-    qStats: quickStats
-
-class BestTeam(NamedTuple):
-    info: TeamInfo
-    stats: quickStats
-    events: list[EventData]
-
-    
-class QueryResult(NamedTuple):
-    result: NamedTuple
-    success: bool
+    qStats: QuickStats
 
 class TeamLogistics(NamedTuple):
     name: str
     number: str
 
-    loc: LocationValues
+    loc: Location
+    school: str
 
     rookie: str
     website: str = None
-    sponsors: list = None
+    sponsors: list[str] = None
 
+class TeamEvents(NamedTuple):
+    info: Team
+    events: list[Event]

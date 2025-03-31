@@ -104,11 +104,6 @@ class SelectUser(View):
         if not self.selected_user:
             embed = discord.Embed(title="Timeout", description="Selection timed out")
             await self.ctx.send(embed=embed)
-            
-            
-@bot.event
-async def on_ready():
-    print("Online.")
 
 
 @bot.command(pass_context=True, brief="A test command to check if the bot is working")
