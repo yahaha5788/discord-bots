@@ -5,6 +5,8 @@ import query_stuff.queries as queries
 from discord.ext import commands
 import discord.utils
 from random import randint, choice
+
+from misc.tupleTemplates import Alliance
 from misc.utilMethods import appendSuffix
 from typing import Never
 
@@ -96,12 +98,12 @@ async def bestteam(ctx, region='All') -> Never:
     embed = discord.Embed(title=title, description=desc, color=embed_color)
 
     name, val = qStatsTemplate(auto, tele, endgame, np)
-    embed.add_field(name=name, value=val)
+    embed.add_field(name=name, value=val, inline=False)
 
     for event in team_events:
         name, val = eventTemplate(event)
 
-        embed.add_field(name=name, value=val)
+        embed.add_field(name=name, value=val, inline=False)
 
     setFooter(embed)
 
@@ -126,7 +128,7 @@ async def quickstats(ctx, number) -> Never:
     qStats_embed: discord.Embed = discord.Embed(title=title, color=embed_color)
 
     name, val = qStatsTemplate(auto, tele, endgame, np)
-    qStats_embed.add_field(name=name, value=val)
+    qStats_embed.add_field(name=name, value=val, inline=False)
 
     setFooter(qStats_embed)
 
@@ -152,7 +154,7 @@ async def teamevents(ctx, number) -> Never:
 
     for event in events:
         name, val = eventTemplate(event)
-        events_embed.add_field(name=name, value=value)
+        events_embed.add_field(name=name, value=value, inline=False)
 
     setFooter(events_embed)
 
@@ -196,6 +198,23 @@ async def bestmatch(ctx, region='All'):
         await ctx.send(embed=embed)
         return
 
+    event, match = data
+    red, blue = match
+    red: Alliance
+    blue: Alliance
+
+    title = f"Best match was played at {event.name} on {event.start}, in {event.location.cityStateCountry} ({event.event_type})"
+
+    desc = f"""
+Score:
+Red Alliance ({red.one} & {red.two}) - {red.scores.totalPoints} ({red.scores.totalPointsNP}) 
+Blue Alliance ({blue.one} & {blue.two}) - {blue.scores.totalPoints} ({blue.scores.totalPointsNP})
+"""
+    scores_embed = discord.Embed(title=title, description=desc, color=embed_color)
+
+    auto = f"""
+
+"""
 
 @bot.command(pass_context=True, aliases=['8'])
 async def eightball(ctx) -> Never:

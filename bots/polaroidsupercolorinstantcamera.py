@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import discord.utils
-from discord.ui import View, Button
+from typing import Any
 import re
 
 command_prefix = "polaroid "
@@ -43,8 +43,20 @@ def filterUsers(users: list) -> list:
             filtered_users.append(user)
             
     return filtered_users
-         
-        
+
+def check(ctx):
+    return lambda m: m.author == ctx.author and m.channel == ctx.channel #if message sent is the same channel & author as the original message
+
+
+async def getInputOfType(func, ctx):
+    while True:
+        try:
+            msg = await bot.wait_for('message', check=check(ctx))
+            return func(msg.content)
+        except ValueError:
+            ctx.send("Enter a number.")
+            continue
+
 async def removeSupercolor(ctx):
     user = ctx.message.author
     role = findSupercolorRole(user)
@@ -70,40 +82,6 @@ async def addSupercolor(ctx, hexcode):
         await role.edit(position=len(ctx.guild.roles) - 2)
         
     await user.add_roles(role)
-
-
-class SelectUser(View):
-    def __init__(self, ctx, users):
-        super().__init__(timeout=30)
-        self.ctx = ctx
-        self.selected_user = None
-        self.users = users
-
-        for user in users:
-            color_role = findSupercolorRole(user)
-            if not color_role:
-                continue
-
-            button = Button(label=user.display_name, style=discord.ButtonStyle.primary, custom_id=str(user.id))
-
-            button.callback = lambda interaction, u=user: self.buttonMonitor(interaction, u)
-
-            self.add_item(button)
-
-    async def buttonMonitor(self, interaction: discord.Interaction, user):
-        if interaction.user == self.ctx.author:
-            self.selected_user = user
-            await interaction.response.delete()
-            self.stop()
-
-    async def userSelection(self):
-        await self.wait()
-        return self.selected_user
-        
-    async def on_timeout(self):
-        if not self.selected_user:
-            embed = discord.Embed(title="Timeout", description="Selection timed out")
-            await self.ctx.send(embed=embed)
 
 
 @bot.command(pass_context=True, brief="A test command to check if the bot is working")
@@ -150,7 +128,7 @@ async def copycolor(ctx, username):
     users: list = getUsers(ctx.guild, username)
     
     filtered_users = filterUsers(users)
-    
+
     if not filtered_users:
         await ctx.send("User not found, or the user entered does not have a valid color role")
         return
@@ -159,17 +137,24 @@ async def copycolor(ctx, username):
         found_user = filtered_users[0]
         
     else:
-        await ctx.send("Multiple users found. Select one: ")
+        found_user = None
+        users_dict: dict[int, Any] = {}
         for user in filtered_users:
+            users_dict[filtered_users.index(user)] = user
+
+        await ctx.send("Multiple users found. Select one by typing the corresponding number:")
+        for num, user in users_dict:
             color_role = findSupercolorRole(user)
             hexcode = f"{color_role.color.value:06X}"
             
-            embed = discord.Embed(title=user.display_name, color=int(hexcode, 16))
+            embed = discord.Embed(title=f"{num}: {user.display_name}", color=int(hexcode, 16))
             await ctx.send(embed=embed)
-            
-        selector = SelectUser(ctx, filtered_users)
-        await ctx.send(view=selector)
-        found_user = await selector.userSelection()
+
+        while not found_user:
+            requested_user: int = await getInputOfType(int, ctx)
+            if requested_user in users_dict:
+                found_user = users_dict[requested_user]
+
 
     if found_user:
         hexcode = f"{findSupercolorRole(found_user).color.value:06X}"
