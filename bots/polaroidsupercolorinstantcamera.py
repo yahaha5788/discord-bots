@@ -143,7 +143,7 @@ async def copycolor(ctx, username):
             users_dict[filtered_users.index(user)] = user
 
         await ctx.send("Multiple users found. Select one by typing the corresponding number:")
-        for num, user in users_dict:
+        for num, user in users_dict.items():
             color_role = findSupercolorRole(user)
             hexcode = f"{color_role.color.value:06X}"
             
@@ -154,6 +154,8 @@ async def copycolor(ctx, username):
             requested_user: int = await getInputOfType(int, ctx)
             if requested_user in users_dict:
                 found_user = users_dict[requested_user]
+            else:
+                await ctx.send("Please enter a valid number.")
 
 
     if found_user:
