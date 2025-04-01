@@ -1,4 +1,6 @@
 import discord
+from anyio import value
+
 import query_stuff.queries as queries
 from discord.ext import commands
 import discord.utils
@@ -30,15 +32,14 @@ choices = [
 def awardTemplate(award) -> str:
     return f"{appendSuffix(award.placement)} place {award.type}\n"
 
-def eventTemplate(event) -> str:
+def eventTemplate(event) -> tuple[str, str]:
     if not event.stats:
-        return f"""
-**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**
-Type: {event.event_type}
-No stats for the event.
-"""
-    stats = f"""
-**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**
+        name = f"**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**"
+        val = f"Type: {event.event_type}\nNo stats for the event."
+        return name, val
+
+    name = f"**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**"
+    val = f"""
 Type: {event.event_type}
 Team's stats for the event:
 Rank: {event.stats.event_rank}
@@ -46,13 +47,20 @@ Record: {event.stats.w} - {event.stats.l} - {event.stats.t}
 Awards:"""
 
     if not event.stats.awards:
-        return stats + f" None\n"
+        return name, val + f" None\n"
 
-    stats = stats + f"\n"
+    val = val + f"\n"
     for award in event.stats.awards:
-        stats = stats + awardTemplate(award)
+        val = val + awardTemplate(award)
 
-    return stats
+    return name, val
+
+def qStatsTemplate(auto, teleop, endgame, np) -> tuple[str, str]:
+    name = "**Quick Stats:**"
+    val = f"""
+Auto: {auto}\nTeleOp: {teleop}\nEndgame: {endgame}\nNpTotal: {np}
+"""
+    return name, val
 
 def addSponsors(sponsors: list[str], string: str) -> str:
     if not sponsors:
@@ -83,15 +91,18 @@ async def bestteam(ctx, region='All') -> Never:
     auto, tele, endgame, np = team_qstats
     location = team_info.loc.cityStateCountry
     title = f"Team {team_info.number}, {team_info.name}"
-    desc = f"""
-Located in {location}
-
-Auto:    {auto}\nTeleOp:  {tele}\nEndgame: {endgame}\nNpTotal: {np}
-    """
-    for event in team_events:
-        desc = desc + eventTemplate(event)
+    desc = f"Located in {location}"
 
     embed = discord.Embed(title=title, description=desc, color=embed_color)
+
+    name, val = qStatsTemplate(auto, tele, endgame, np)
+    embed.add_field(name=name, value=val)
+
+    for event in team_events:
+        name, val = eventTemplate(event)
+
+        embed.add_field(name=name, value=val)
+
     setFooter(embed)
 
     await ctx.send(embed=embed)
@@ -112,8 +123,11 @@ async def quickstats(ctx, number) -> Never:
     title = f"Team {number}, {name}"
 
     auto, tele, endgame, np = qstats
-    desc = f"""Auto:    {auto}\nTeleOp:  {tele}\nEndgame: {endgame}\nNpTotal: {np}"""
-    qStats_embed = discord.Embed(title=title, description=desc, color=embed_color)
+    qStats_embed: discord.Embed = discord.Embed(title=title, color=embed_color)
+
+    name, val = qStatsTemplate(auto, tele, endgame, np)
+    qStats_embed.add_field(name=name, value=val)
+
     setFooter(qStats_embed)
 
     await ctx.send(embed=qStats_embed)
@@ -132,11 +146,14 @@ async def teamevents(ctx, number) -> Never:
         return
     info, events = data
     title = f"Team {info.number}, {info.name}"
-    desc = f""""""
-    for event in events:
-        desc = desc + eventTemplate(event)
 
-    events_embed = discord.Embed(title=title, description=desc, color=embed_color)
+
+    events_embed = discord.Embed(title=title, color=embed_color)
+
+    for event in events:
+        name, val = eventTemplate(event)
+        events_embed.add_field(name=name, value=value)
+
     setFooter(events_embed)
 
     await ctx.send(embed=events_embed)
@@ -170,6 +187,15 @@ Sponsors:
     setFooter(info_embed)
 
     await ctx.send(embed=info_embed)
+
+@bot.command(pass_context=True)
+async def bestmatch(ctx, region='All'):
+    data, success = queries.bestMatch(region)
+    if not success:
+        embed = discord.Embed(description=data, color=embed_color)
+        await ctx.send(embed=embed)
+        return
+
 
 @bot.command(pass_context=True, aliases=['8'])
 async def eightball(ctx) -> Never:

@@ -1,5 +1,5 @@
 {
-    tepRecords(region: All, season: 2024, skip: 0, take: 1, sortDir: Desc, sortBy: "opr") { #gets the best team
+    tepRecords(region: All, season: 2024, skip: 0, take: 1, sortDir: Desc) { #gets the best team
         data {
             data {
                 team {

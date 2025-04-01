@@ -38,6 +38,32 @@ class Team(NamedTuple):
     number: int
     loc: Location = None
 
+class MatchScores(NamedTuple):
+    autoPoints: int
+    autoSample: int
+    autoSpecimen: int
+    autoPark: int
+
+    dcPoints: int
+    dcSample: int
+    dcSpecimen: int
+    dcPark: int
+
+    minorPenalties: int
+    majorPenalties: int
+
+    totalPoints: int
+    totalPointsNP: int
+
+class Alliance(NamedTuple):
+    one: Team
+    two: Team
+    scores: MatchScores
+
+class Match(NamedTuple):
+    red: Alliance
+    blue: Alliance
+
 ########################## QUERY RESULT CLASSES ########################
 
 class QueryResult(NamedTuple):
@@ -69,3 +95,7 @@ class TeamLogistics(NamedTuple):
 class TeamEvents(NamedTuple):
     info: Team
     events: list[Event]
+
+class BestMatch(NamedTuple):
+    event: Event
+    match: Match

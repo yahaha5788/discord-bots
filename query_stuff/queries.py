@@ -2,6 +2,8 @@ from . import queryUtils
 from misc.tupleTemplates import *
 from types import SimpleNamespace
 
+from .queryUtils import formatEventInfo
+
 
 def bestTeam(region: str) -> QueryResult:
     query: str = """
@@ -244,3 +246,80 @@ def teamLogistics(number) -> QueryResult:
     result = TeamLogistics(name, number, location, school_name, rookie_year, website, sponsors)
 
     return QueryResult(result, success)
+
+def bestMatch(region) -> QueryResult:
+    query: str = """
+{
+    matchRecords(season: 2024, region: """+region+""", skip: 0, take: 1, sortDir: Desc) {
+        data {
+            data {
+                match {
+                    teams {
+                        number: teamNumber
+                    }
+                    scores {
+                        ... on MatchScores2024 {
+                            red {
+                                autoPoints
+                                autoSamplePoints
+                                autoSpecimenPoints
+                                autoParkPoints
+                                dcPoints
+                                dcSamplePoints
+                                dcSpecimenPoints
+                                dcParkPoints
+                                minorsByOpp
+                                majorsByOpp
+                                totalPoints
+                                totalPointsNp
+                            }
+                            blue {
+                                autoPoints
+                                autoParkPoints
+                                autoSamplePoints
+                                autoSpecimenPoints
+                                dcPoints
+                                dcParkPoints
+                                dcSamplePoints
+                                dcSpecimenPoints
+                                minorsByOpp
+                                majorsByOpp
+                                totalPoints
+                                totalPointsNp
+                            }
+                        }
+                    }
+                    event {
+                        name
+                        type
+                        start
+                        started
+                        location {
+                            venue
+                            city
+                            state
+                            country
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+"""
+
+    success, data = queryUtils.parseQuery(query)
+    if not success:
+        return QueryResult(data, success)
+
+    match = data.data.matchRecords.data[0].data.match
+
+    red: Alliance = Alliance(match.teams[0], match.teams[1], queryUtils.formatMatchScores(match.scores.red))
+    blue: Alliance = Alliance(match.teams[2], match.teams[3], queryUtils.formatMatchScores(match.scores.blue))
+
+    event: Event = formatEventInfo(match.event)
+
+    result = BestMatch(event, Match(red, blue))
+
+    return QueryResult(result, success)
+

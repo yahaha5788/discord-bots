@@ -2,7 +2,7 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.tupleTemplates import QuickStats, Location, Event, EventStats, Team, Award
+from misc.tupleTemplates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores
 from misc.utilMethods import getCodeDesc, appendSuffix
 
 def parseQuery(query):
@@ -55,8 +55,7 @@ def formatTeamEventData(i: SimpleNamespace, number: int) -> Event:
 
     return Event(name, level, time, started, loc, team_event_stats)
 
-def formatEventInfo(ev: SimpleNamespace) -> Event:
-    event: SimpleNamespace = ev.event
+def formatEventInfo(event: SimpleNamespace) -> Event:
     name: str = event.name
     level: str = event.type
     time: str = event.start
@@ -72,7 +71,27 @@ def formatTeamInfo(team: SimpleNamespace) -> Team:
 
     loc = formatLocationData(team.location)
 
-    return Team(name, number, loc)
+    return Team(
+        name,
+        number,
+        loc
+    )
 
 def filterAwards(awards: list[Award], number) -> list[Award]:
     return [award for award in awards if award.teamNumber == number]
+
+def formatMatchScores(alliance: SimpleNamespace) -> MatchScores:
+    return MatchScores(
+        alliance.autoPoints,
+        alliance.autoParkPoints,
+        alliance.autoSamplePoints,
+        alliance.autoSpecimenPoints,
+        alliance.dcPoints,
+        alliance.dcParkPoints,
+        alliance.dcSamplePoints,
+        alliance.dcSpecimenPoints,
+        alliance.minorsByOpp,
+        alliance.majorsByOpp,
+        alliance.totalPoints,
+        alliance.totalPointsNp
+    )
