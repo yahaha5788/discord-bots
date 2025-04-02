@@ -49,6 +49,7 @@ class MatchScores(NamedTuple):
     dcSpecimen: int
     dcPark: int
 
+    penaltyPointsByOpp: int
     minorPenalties: int
     majorPenalties: int
 
@@ -58,6 +59,7 @@ class MatchScores(NamedTuple):
 class Alliance(NamedTuple):
     one: Team
     two: Team
+    color: str
     scores: MatchScores
 
 class Match(NamedTuple):

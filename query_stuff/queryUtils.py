@@ -83,13 +83,14 @@ def filterAwards(awards: list[Award], number) -> list[Award]:
 def formatMatchScores(alliance: SimpleNamespace) -> MatchScores:
     return MatchScores(
         alliance.autoPoints,
-        alliance.autoParkPoints,
         alliance.autoSamplePoints,
         alliance.autoSpecimenPoints,
+        alliance.autoParkPoints,
         alliance.dcPoints,
-        alliance.dcParkPoints,
         alliance.dcSamplePoints,
         alliance.dcSpecimenPoints,
+        alliance.dcParkPoints,
+        alliance.penaltyPointsByOpp,
         alliance.minorsByOpp,
         alliance.majorsByOpp,
         alliance.totalPoints,

@@ -5,6 +5,7 @@
                 match {
                     teams {
                         number: teamNumber
+                        alliance
                     }
                     scores {
                         ... on MatchScores2024 {
@@ -17,6 +18,7 @@
                                 dcSamplePoints
                                 dcSpecimenPoints
                                 dcParkPoints
+                                penaltyPointsByOpp
                                 minorsByOpp
                                 majorsByOpp
                                 totalPoints
@@ -31,6 +33,7 @@
                                 dcParkPoints
                                 dcSamplePoints
                                 dcSpecimenPoints
+                                penaltyPointsByOpp
                                 minorsByOpp
                                 majorsByOpp
                                 totalPoints

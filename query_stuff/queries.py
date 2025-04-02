@@ -256,6 +256,7 @@ def bestMatch(region) -> QueryResult:
                 match {
                     teams {
                         number: teamNumber
+                        alliance
                     }
                     scores {
                         ... on MatchScores2024 {
@@ -268,6 +269,7 @@ def bestMatch(region) -> QueryResult:
                                 dcSamplePoints
                                 dcSpecimenPoints
                                 dcParkPoints
+                                penaltyPointsByOpp
                                 minorsByOpp
                                 majorsByOpp
                                 totalPoints
@@ -282,6 +284,7 @@ def bestMatch(region) -> QueryResult:
                                 dcParkPoints
                                 dcSamplePoints
                                 dcSpecimenPoints
+                                penaltyPointsByOpp
                                 minorsByOpp
                                 majorsByOpp
                                 totalPoints
@@ -314,8 +317,8 @@ def bestMatch(region) -> QueryResult:
 
     match = data.data.matchRecords.data[0].data.match
 
-    red: Alliance = Alliance(match.teams[0], match.teams[1], queryUtils.formatMatchScores(match.scores.red))
-    blue: Alliance = Alliance(match.teams[2], match.teams[3], queryUtils.formatMatchScores(match.scores.blue))
+    red: Alliance = Alliance(match.teams[0], match.teams[1], match.teams[0].alliance, queryUtils.formatMatchScores(match.scores.red))
+    blue: Alliance = Alliance(match.teams[2], match.teams[3], match.teams[2].alliance, queryUtils.formatMatchScores(match.scores.blue))
 
     event: Event = formatEventInfo(match.event)
 
