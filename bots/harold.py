@@ -2,7 +2,7 @@ import discord
 from discord import ButtonStyle
 
 import query_stuff.queries as queries
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord.utils
 from random import randint, choice
 
@@ -218,9 +218,10 @@ async def bestteam(ctx, region='All') -> Never:
     embed.add_field(name=name, value=val, inline=False)
 
     for event in team_events:
-        name, val = eventTemplate(event)
+        if event.started:
+            name, val = eventTemplate(event)
 
-        embed.add_field(name=name, value=val, inline=False)
+            embed.add_field(name=name, value=val, inline=False)
 
     setFooter(embed)
 
@@ -333,6 +334,54 @@ async def bestmatch(ctx, region='All'):
     await ctx.send(embed=scores_embed)
 
 @categorizedCommand(
+    group="Stats",
+    aliases=['calender', 'upcoming']
+)
+async def upcomingevents(ctx, number: int) -> Never:
+    ...
+
+@categorizedCommand(
+    group='Stats',
+    aliases=['betterteam', 'compare']
+)
+async def compareteams(ctx, team_number_1, team_number_2) -> Never:
+    ...
+
+@categorizedCommand(
+    group='Stats',
+    aliases=['specificstat', 'stat']
+)
+async def customstat(ctx, number, stat) -> Never:
+    ...
+
+@categorizedCommand(
+    group='Stats'
+)
+async def recentmatches(ctx, number) -> Never:
+    ...
+
+@categorizedCommand(
+    group='Info',
+    aliases=['monitor', 'support', 'track', 'follow']
+)
+async def favorite(ctx, number) -> Never:
+    ...
+
+@categorizedCommand(
+    group='Info',
+    aliases=['unfollow']
+)
+async def unfavorite(ctx, number) -> Never:
+    ...
+
+@categorizedCommand(
+    group='Fun',
+    aliases=['questions', 'quiz']
+)
+async def trivia(ctx, number_of_questions=1) -> Never:
+    ...
+
+@categorizedCommand(
     group='Fun',
 )
 async def eightball(ctx) -> Never:
@@ -355,3 +404,24 @@ async def flip(ctx):
     result = 'heads' if randint(0, 1) == 1 else "tails"
     coin_embed = discord.Embed(title="Flipped a coin!", description=f"The :coin: landed on {result}.", color=EMBED_COLOR)
     await ctx.send(embed=coin_embed)
+
+@categorizedCommand(
+    group='Utility'
+)
+async def designatechannel(ctx, channel: discord.TextChannel=None):
+    if not channel:
+        ctx.send("Please enter a valid channel.")
+        return
+
+    #open file stuff goes here
+
+    #guild_id = str(ctx.guild.id)
+    #designated_channels[guild_id] = channel.id
+
+@tasks.loop(hours=1)
+async def sendNotifications() -> Never:
+    ...
+
+@bot.event
+async def on_ready():
+    ...
