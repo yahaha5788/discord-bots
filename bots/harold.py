@@ -8,7 +8,7 @@ from random import randint, choice
 from typing import Never, Optional, Final
 
 import query_stuff.queries as queries
-from misc.tupleTemplates import Alliance, MatchScores, Match, UpcomingEventCheck, OngoingEventCheck
+from misc.tupleTemplates import Alliance, MatchScores, Match, UpcomingEventCheck, OngoingEventCheck, TeamQualified
 from misc.utilMethods import appendSuffix
 
 command_prefix = '$'
@@ -364,12 +364,12 @@ async def recentmatches(ctx, number) -> Never:
 
 @categorizedCommand(
     group='Stats',
-    aliases=['qualified', 'hasqualified'],
+    aliases=['states'],
     description='',
     brief='',
     usage=f'{command_prefix}teamhasqualified <number>'
 )
-async def teamhasqualified(ctx, number):
+async def qualifiedstates(ctx, number):
     if not isinstance(number, int):
         await ctx.send("Please enter a valid number.")
         return
@@ -380,6 +380,15 @@ async def teamhasqualified(ctx, number):
         await ctx.send(embed=embed)
         return
 
+    data: TeamQualified
+    if not data.hasQualified:
+        desc = f"{data.team.number} {data.team.name} has not qualified for any events."
+        qual_embed = discord.Embed(description=desc, color=EMBED_COLOR)
+        await ctx.send(embed=qual_embed)
+        return
+
+    title = f"{data.team.number} {data.team.number} has qualified for states."
+
 
 
 #---------------------COMMANDS: INFO--------------------------#
@@ -387,8 +396,8 @@ async def teamhasqualified(ctx, number):
     group="Info",
     aliases=['info', 'ti'],
     usage=f"{command_prefix}teaminfo <number>",
-    brief = "Gets information on a team",
-    description = 'Gets information on a team, like their rookie year or website link by their number from ftcscout.org'
+    brief="Gets information on a team",
+    description='Gets information on a team, like their rookie year or website link by their number from ftcscout.org'
 )
 async def teaminfo(ctx, number) -> Never:
     if not isinstance(number, int):

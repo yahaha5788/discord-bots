@@ -69,7 +69,7 @@ class Match(NamedTuple):
 ########################## QUERY RESULT CLASSES ########################
 
 class QueryResult(NamedTuple):
-    result: NamedTuple
+    result: str | NamedTuple
     success: bool
 
 class BestTeam(NamedTuple):

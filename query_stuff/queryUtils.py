@@ -5,7 +5,7 @@ from types import SimpleNamespace
 from misc.tupleTemplates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores
 from misc.utilMethods import getCodeDesc, appendSuffix
 
-def parseQuery(query):
+def parseQuery(query) -> tuple[bool, SimpleNamespace] | tuple[bool, str]:
     response = requests.post(url="https://api.ftcscout.org/graphql", json={"query": query})
     if response.status_code == 200:
         success = True
