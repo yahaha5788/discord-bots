@@ -1,3 +1,4 @@
 /misc/keys.env
 /bots/main.py
-/misc/storage.json
+/bots/channel_des.json
+/bots/following.json

@@ -5,6 +5,20 @@ from types import SimpleNamespace
 from .queryUtils import formatEventInfo
 
 
+def nameFromNumber(number: int) -> str:
+    query: str = """
+{
+    teamByNumber(number: """+str(number)+""") {
+        name
+    }
+}
+"""
+    success, data = queryUtils.parseQuery(query)
+    if not success:
+        return ''
+
+    return data.data.teamByNumber.name
+
 def bestTeam(region: str) -> QueryResult:
     query: str = """
 {
@@ -326,3 +340,131 @@ def bestMatch(region) -> QueryResult:
 
     return QueryResult(result, success)
 
+def upcomingEvents(number) -> QueryResult:
+    query: str = """
+{
+    teamByNumber(number: """+number+""") {
+        name
+        number
+        events(season: 2024) {
+            event {
+                name
+                type
+                start
+                started
+                location {
+                    venue
+                    city
+                    state
+                    country
+                }
+            }
+        }
+    }
+}
+    """
+
+    success, data = queryUtils.parseQuery(query)
+    if not success:
+        return QueryResult(data, success)
+
+    team = data.data.teamByNumber
+
+    events = team.events
+
+    unplayed_events = [event for event in events if not event.started]
+
+    ev: list[Event] = []
+
+    for event in unplayed_events:
+        ev.append(queryUtils.formatEventInfo(event))
+
+    t = Team(team.name, team.number)
+
+    result = UpcomingEvents(t, ev)
+
+    return QueryResult(result, success)
+
+
+def ongoingEvents(number) -> QueryResult:
+    query: str = """
+{
+    teamByNumber(number: """ + number + """) {
+        name
+        number
+        events(season: 2024) {
+            event {
+                name
+                type
+                start
+                ongoing
+                location {
+                    venue
+                    city
+                    state
+                    country
+                }
+            }
+        }
+    }
+}
+    """
+
+    success, data = queryUtils.parseQuery(query)
+    if not success:
+        return QueryResult(data, success)
+
+    team = data.data.teamByNumber
+
+    events = team.events
+
+    ongoing_events = [event for event in events if event.ongoing]
+
+    ev: list[Event] = []
+
+    for event in ongoing_events:
+        ev.append(queryUtils.formatEventInfo(event))
+
+    t = Team(team.name, team.number)
+
+    result = UpcomingEvents(t, ev)
+
+    return QueryResult(result, success)
+
+def qualified(number) -> QueryResult:
+    query: str = """
+{
+    teamByNumber(number: 14988) {
+        name
+        number
+        events(season: 2024) {
+            event {
+                name
+                type
+                awards {
+                    teamNumber
+                    type
+                    placement
+                }
+            }
+        }
+    }
+}
+"""
+
+    success, data = queryUtils.parseQuery(query)
+    if not success:
+        return QueryResult(data, success)
+
+    team = data.data.teamByNumber
+
+    events = team.events
+
+    qualifiable_events = [event for event in events if event.type == 'Qualifier' or event.type == 'LeagueTournament'] # i'm sorry.
+    qualified_events = [event for event in qualifiable_events for award in event.awards if number == award.teamNumber and (award.type == 'Winner' and award.placement == 1 or award.placement == 2) or (award.type == 'Inspire' and award.placement == 1)]
+
+    team = Team(team.name, team.number)
+    has_qualified = True if qualified_events else False
+    result = TeamQualified(team, has_qualified, qualified_events[0])
+
+    return QueryResult(result, success)

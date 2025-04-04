@@ -101,3 +101,26 @@ class TeamEvents(NamedTuple):
 class BestMatch(NamedTuple):
     event: Event
     match: Match
+
+class UpcomingEvents(NamedTuple):
+    team: Team
+    events: list[Event]
+
+class OngoingEvents(NamedTuple):
+    team: Team
+    events: list[Event]
+
+class TeamQualified(NamedTuple):
+    team: Team
+    hasQualified: bool
+    eventQualified: Event = None
+
+#------------------------OTHER-----------------------#
+
+class UpcomingEventCheck(NamedTuple):
+    last_events: UpcomingEvents
+    current_events: UpcomingEvents
+
+class OngoingEventCheck(NamedTuple):
+    last_events: OngoingEvents
+    current_event: OngoingEvents

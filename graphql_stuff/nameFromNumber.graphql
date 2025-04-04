@@ -1,0 +1,5 @@
+{
+    teamByNumber(number: 14988) {
+        name
+    }
+}

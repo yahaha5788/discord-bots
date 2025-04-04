@@ -1,15 +1,15 @@
+import json
 import discord
+import discord.utils
 from discord import ButtonStyle
 
-import query_stuff.queries as queries
 from discord.ext import commands, tasks
-import discord.utils
 from random import randint, choice
-
-from misc.tupleTemplates import Alliance, MatchScores, Match
-from misc.utilMethods import appendSuffix
 from typing import Never, Optional, Final
 
+import query_stuff.queries as queries
+from misc.tupleTemplates import Alliance, MatchScores, Match, UpcomingEventCheck, OngoingEventCheck
+from misc.utilMethods import appendSuffix
 
 command_prefix = '$'
 intents = discord.Intents.default()
@@ -34,7 +34,12 @@ CHOICES: Final[list] = [
 
 CHARACTER_LIMIT: Final[int] = 200
 
+FOLLOWED_TEAMS_UPCOMING_EVENTS: dict[int, UpcomingEventCheck] = {}
+FOLLOWED_TEAMS_ONGOING_EVENTS: dict[int, OngoingEventCheck] = {}
+#dict of a team's upcoming events
+#used by loop to check if any team's upcoming events have changed
 
+#---------------------UTILITY FUNCTIONS--------------------------#
 def categorizedCommand(group: str = "Uncategorized", **kwargs): #i think making my own decorator is a sign i'm going down the rabbit hole
     def decorator(command_function):
         global bot
@@ -45,6 +50,9 @@ def categorizedCommand(group: str = "Uncategorized", **kwargs): #i think making 
 
 def awardTemplate(award) -> str:
     return f"{appendSuffix(award.placement)} place {award.type}\n"
+
+def unplayedEventTemplate(event) -> str:
+    return f"**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**\nType: {event.event_type}"
 
 def eventTemplate(event) -> tuple[str, str]:
     if not event.stats:
@@ -104,7 +112,6 @@ def addMatchScores(match: Match, embed: discord.Embed) -> None:
     embed.add_field(name=red_name, value=red_scores, inline=True)
     embed.add_field(name=blue_name, value=blue_scores, inline=True)
 
-
 def addSponsors(sponsors: list[str], string: str) -> str:
     if not sponsors:
         return string + "None"
@@ -117,7 +124,7 @@ def addSponsors(sponsors: list[str], string: str) -> str:
 def setFooter(embed: discord.Embed) -> None:
     embed.add_field(name="Links", value="[FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
 
-
+#---------------------COMMANDS: HELP--------------------------#
 @categorizedCommand(
     group='Help',
     aliases=['h'],
@@ -193,6 +200,7 @@ async def help(ctx, keyword: Optional[str] = None) -> Never:
 
     message = await ctx.send(embed=pages[current_index], view=help_view)
 
+#---------------------COMMANDS: RECORDS--------------------------#
 @categorizedCommand(
     group="Records",
     aliases=['topteam', 'bt'],
@@ -228,13 +236,44 @@ async def bestteam(ctx, region='All') -> Never:
     await ctx.send(embed=embed)
 
 @categorizedCommand(
+    group='Records',
+    aliases=['wr', 'worldrecord', 'bm'],
+    description='',
+    brief="",
+    usage=""
+)
+async def bestmatch(ctx, region='All'):
+    data, success = queries.bestMatch(region)
+    if not success:
+        embed = discord.Embed(description=data, color=EMBED_COLOR)
+        await ctx.send(embed=embed)
+        return
+
+    event, match = data
+
+
+    title = f"Best match was played at {event.name} on {event.start}\n{event.location.cityStateCountry} ({event.event_type})"
+    scores_embed = discord.Embed(title=title, description="═══════════════════════════════", color=EMBED_COLOR)
+
+    addMatchScores(match, scores_embed)
+
+    setFooter(scores_embed)
+
+    await ctx.send(embed=scores_embed)
+
+#---------------------COMMANDS: STATS--------------------------#
+@categorizedCommand(
     group="Stats",
     aliases=['qstats', 'qs'],
-    usage="",
+    usage=f"{command_prefix}quickstats <number>",
     brief="Gets the Quick Stats (Auto, Teleop, Endgame, NP) of a team.",
     description='Gets the Quick Stats (Auto, Teleop, Endgame, NP) of a given team by their number from ftcscout.org.'
 )
 async def quickstats(ctx, number) -> Never:
+    if not isinstance(number, int):
+        await ctx.send("Please enter a valid number.")
+        return
+
     data, success = queries.teamQuickStats(number)
     if not success:
         embed = discord.Embed(description=data, color=EMBED_COLOR)
@@ -256,11 +295,14 @@ async def quickstats(ctx, number) -> Never:
 @categorizedCommand(
     group="Stats",
     aliases=['events', 'ev'],
-    help="Command format: $teamevents <number>",
+    usage=f"{command_prefix}teamevents <number>",
     brief="Gets all events a team has had or will have, and their stats.",
     description='Gets all events and event stats of given team by their number from ftcscout.org.'
 )
 async def teamevents(ctx, number) -> Never:
+    if not isinstance(number, int):
+        await ctx.send("Please enter a valid number.")
+        return
     data, success = queries.teamEvents(number)
     if not success:
         embed = discord.Embed(description=data, color=EMBED_COLOR)
@@ -281,13 +323,78 @@ async def teamevents(ctx, number) -> Never:
     await ctx.send(embed=events_embed)
 
 @categorizedCommand(
+    group='Stats',
+    aliases=['stat'],
+    description='',
+    brief="",
+    usage=f"{command_prefix}customstat <number> <stat>"
+)
+async def customstat(ctx, number, stat) -> Never:
+    raise NotImplementedError()
+
+@categorizedCommand(
+    group='Stats',
+    aliases=['calendar'],
+    description='',
+    brief="",
+    usage=f"{command_prefix}upcomingevents <number>"
+)
+async def upcomingevents(ctx, number) -> Never:
+    raise NotImplementedError()
+
+@categorizedCommand(
+    group='Stats',
+    aliases=['betterteam', 'compare'],
+    description='',
+    brief="",
+    usage=f"{command_prefix}compareteams <team_number_1> <team_number_2>"
+)
+async def compareteams(ctx, team_number_1, team_number_2) -> Never:
+    raise NotImplementedError()
+
+@categorizedCommand(
+    group='Stats',
+    aliases=['recentscores', 'recent'],
+    description='',
+    brief="",
+    usage=f"{command_prefix}recentmatches <number>"
+)
+async def recentmatches(ctx, number) -> Never:
+    raise NotImplementedError()
+
+@categorizedCommand(
+    group='Stats',
+    aliases=['qualified', 'hasqualified'],
+    description='',
+    brief='',
+    usage=f'{command_prefix}teamhasqualified <number>'
+)
+async def teamhasqualified(ctx, number):
+    if not isinstance(number, int):
+        await ctx.send("Please enter a valid number.")
+        return
+
+    data, success = queries.qualified(number)
+    if not success:
+        embed = discord.Embed(description=data, color=EMBED_COLOR)
+        await ctx.send(embed=embed)
+        return
+
+
+
+#---------------------COMMANDS: INFO--------------------------#
+@categorizedCommand(
     group="Info",
     aliases=['info', 'ti'],
-    help="Command format: $teaminfo <number>",
+    usage=f"{command_prefix}teaminfo <number>",
     brief = "Gets information on a team",
     description = 'Gets information on a team, like their rookie year or website link by their number from ftcscout.org'
 )
 async def teaminfo(ctx, number) -> Never:
+    if not isinstance(number, int):
+        await ctx.send("Please enter a valid number.")
+        return
+
     data, success = queries.teamLogistics(number)
     if not success:
         embed = discord.Embed(description=data, color=EMBED_COLOR)
@@ -311,78 +418,105 @@ Sponsors:
 
     await ctx.send(embed=info_embed)
 
+#---------------------COMMANDS: MONITOR--------------------------#
 @categorizedCommand(
-    group='Records',
-)
-async def bestmatch(ctx, region='All'):
-    data, success = queries.bestMatch(region)
-    if not success:
-        embed = discord.Embed(description=data, color=EMBED_COLOR)
-        await ctx.send(embed=embed)
-        return
-
-    event, match = data
-
-
-    title = f"Best match was played at {event.name} on {event.start}\n{event.location.cityStateCountry} ({event.event_type})"
-    scores_embed = discord.Embed(title=title, description="═══════════════════════════════", color=EMBED_COLOR)
-
-    addMatchScores(match, scores_embed)
-
-    setFooter(scores_embed)
-
-    await ctx.send(embed=scores_embed)
-
-@categorizedCommand(
-    group="Stats",
-    aliases=['calender', 'upcoming']
-)
-async def upcomingevents(ctx, number: int) -> Never:
-    ...
-
-@categorizedCommand(
-    group='Stats',
-    aliases=['betterteam', 'compare']
-)
-async def compareteams(ctx, team_number_1, team_number_2) -> Never:
-    ...
-
-@categorizedCommand(
-    group='Stats',
-    aliases=['specificstat', 'stat']
-)
-async def customstat(ctx, number, stat) -> Never:
-    ...
-
-@categorizedCommand(
-    group='Stats'
-)
-async def recentmatches(ctx, number) -> Never:
-    ...
-
-@categorizedCommand(
-    group='Info',
-    aliases=['monitor', 'support', 'track', 'follow']
+    group='Monitor',
+    aliases=['support', 'track', 'follow'],
+    description='',
+    brief="",
+    usage=f"{command_prefix}favorite <number>"
 )
 async def favorite(ctx, number) -> Never:
-    ...
+    if not isinstance(number, int):
+        await ctx.send("Please enter a valid number.")
+        return
+
+    guild_id = ctx.guild.id
+
+    with open('following', 'r+') as following:
+        followed_teams: dict[str, list[int]] = json.load(following)
+
+        if guild_id not in followed_teams.keys():
+            followed_teams[guild_id]: list[int] = []
+
+        if number in followed_teams[guild_id]:
+            await ctx.send(f"You are already following Team {number}, {queries.nameFromNumber(number)}")
+            return
+
+        followed_teams[guild_id].append(number)
+        following.seek(0)
+        json.dump(followed_teams, following, indent=4)
+        following.truncate()
+
+    await ctx.send(f"You are now following Team {number}, {queries.nameFromNumber(number)}")
 
 @categorizedCommand(
-    group='Info',
-    aliases=['unfollow']
+    group='Monitor',
+    aliases=['unfollow'],
+    description='',
+    brief="",
+    usage=f"{command_prefix}unfavorite <number>"
 )
 async def unfavorite(ctx, number) -> Never:
-    ...
+    if not isinstance(number, int):
+        await ctx.send("Please enter a valid number.")
+        return
+
+    guild_id = ctx.guild.id
+
+    with open('following', 'r+') as following:
+        followed_teams: dict[str, list[int]] = json.load(following)
+
+        if guild_id not in followed_teams.keys():
+            await ctx.send('You are not following any teams')
+            return
+
+        if number not in followed_teams[guild_id]:
+            await ctx.send(f"You are not following {number}.")
+
+        followed_teams[guild_id].remove(number)
+        following.seek(0)
+        json.dump(followed_teams, following, indent=4)
+        following.truncate()
+
+    await ctx.send(f"You are no longer following Team {number}, {queries.nameFromNumber(number)}")
 
 @categorizedCommand(
+    group='Monitor',
+    description='',
+    brief="",
+    usage=f"{command_prefix}designatechannel"
+)
+async def designatechannel(ctx):
+    guild_id = str(ctx.guild.id)
+    channel_id = ctx.channel.id
+
+    with open('channel_des.json', 'r+') as channel_des:
+        channels: dict[str, int] = json.load(channel_des)
+        channels[guild_id] = channel_id
+
+        channel_des.seek(0)
+        json.dump(channels, channel_des, indent=4)
+        channel_des.truncate()
+
+    await ctx.send("Notifications for teams you are following will show up here.")
+
+#---------------------COMMANDS: FUN--------------------------#
+@categorizedCommand(
     group='Fun',
-    aliases=['questions', 'quiz']
+    aliases=['questions', 'quiz'],
+    description='',
+    brief="",
+    usage=f"{command_prefix}trivia <number_of_questions>"
 )
 async def trivia(ctx, number_of_questions=1) -> Never:
-    ...
+    raise NotImplementedError()
 
 @categorizedCommand(
     group='Fun',
+    description='',
+    brief="",
+    usage=f"{command_prefix}eightball"
 )
 async def eightball(ctx) -> Never:
     result = choice(CHOICES)
@@ -390,7 +524,11 @@ async def eightball(ctx) -> Never:
     await ctx.send(embed=eightball_embed)
 
 @categorizedCommand(
-    group='Fun'
+    group='Fun',
+    aliases=['roll'],
+    description='Rolls a die with a given number of sides',
+    brief="Rolls a die with a given number of sides",
+    usage=f"{command_prefix}dice <sides>"
 )
 async def dice(ctx, sides=6) -> Never:
     roll = randint(0, sides)
@@ -398,30 +536,82 @@ async def dice(ctx, sides=6) -> Never:
     await ctx.send(embed=dice_embed)
 
 @categorizedCommand(
-    group='Fun'
+    group='Fun',
+    aliases=['coin'],
+    description='Flips a coin.',
+    brief="Flips a coin.",
+    usage=f"{command_prefix}flip"
 )
 async def flip(ctx):
     result = 'heads' if randint(0, 1) == 1 else "tails"
     coin_embed = discord.Embed(title="Flipped a coin!", description=f"The :coin: landed on {result}.", color=EMBED_COLOR)
     await ctx.send(embed=coin_embed)
 
-@categorizedCommand(
-    group='Utility'
-)
-async def designatechannel(ctx, channel: discord.TextChannel=None):
-    if not channel:
-        ctx.send("Please enter a valid channel.")
-        return
-
-    #open file stuff goes here
-
-    #guild_id = str(ctx.guild.id)
-    #designated_channels[guild_id] = channel.id
-
+#-----------------------------OTHER-------------------------#
 @tasks.loop(hours=1)
 async def sendNotifications() -> Never:
-    ...
+    with open('channel_des.json') as channels:
+        notif_channels: dict[str, int] = json.load(channels)
+
+        for guild_id, channel_id in notif_channels.items():
+            channel = bot.get_channel(channel_id)
+            if not channel:
+                continue
+
+            with open('following.json', 'r') as following:
+                followed_teams: dict[str, list[int]] = json.load(following)
+                followed_teams: list[int] = followed_teams[guild_id]
+
+                for number in followed_teams:
+                    #UPCOMING EVENTS
+                    data, success = queries.upcomingEvents(number)
+                    if not success:
+                        continue
+
+                    team_upcoming_events: UpcomingEventCheck = FOLLOWED_TEAMS_UPCOMING_EVENTS[number]
+                    team_upcoming_events.last_events = team_upcoming_events.current_events
+                    team_upcoming_events.current_events = data
+
+                    if team_upcoming_events.last_events != team_upcoming_events.current_events:
+                        events = [event for event in team_upcoming_events.current_events.events if event not in team_upcoming_events.last_events.events] #teehee
+                    else:
+                        continue
+
+                    title = f"Team {number}, {queries.nameFromNumber(number)} has a new event!"
+                    desc = ""
+
+                    for event in events:
+                        desc = desc + unplayedEventTemplate(event) + "\n"
+
+                    unplayed_notif_embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
+
+                    await channel.send(embed=unplayed_notif_embed)
+
+                for number in followed_teams:
+                    #ONGOING EVENTS
+                    data, success = queries.ongoingEvents(number)
+                    if not success:
+                        continue
+
+                    team_ongoing_events: OngoingEventCheck = FOLLOWED_TEAMS_ONGOING_EVENTS[number]
+                    team_ongoing_events.last_events = team_ongoing_events.current_events
+                    team_ongoing_events.current_events = data
+
+                    if team_ongoing_events.last_events != team_ongoing_events.current_events:
+                        events = [event for event in team_ongoing_events.current_events.events if event not in team_ongoing_events.last_events.events]  # teehee
+                    else:
+                        continue
+
+                    title = f"Team {number}, {queries.nameFromNumber(number)} is currently playing in an event!"
+                    desc = ""
+
+                    for event in events:
+                        desc = desc + unplayedEventTemplate(event) + "\n"
+
+                    ongoing_notif_embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
+
+                    await channel.send(embed=ongoing_notif_embed)
 
 @bot.event
 async def on_ready():
-    ...
+    sendNotifications.start()

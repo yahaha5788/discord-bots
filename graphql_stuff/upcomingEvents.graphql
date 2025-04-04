@@ -1,0 +1,23 @@
+{
+    teamByNumber(number: 20744) {
+        name
+        number
+
+        events(season: 2024) {
+            event {
+                name
+                type
+                start
+                started
+                ongoing
+                finished
+                location {
+                    venue
+                    city
+                    state
+                    country
+                }
+            }
+        }
+    }
+}
