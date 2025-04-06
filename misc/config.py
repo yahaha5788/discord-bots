@@ -75,4 +75,6 @@ CHARACTER_LIMIT: Final[int] = 1000
 
 COMMAND_PREFIX: Final[str] = '$'
 
-ACTIVITY: Final[discord.Activity] = discord.Activity(type=discord.ActivityType.listening, name="the sounds of lifts skipping")
+ACTIVITY: Final[discord.Activity] = discord.Activity(type=discord.ActivityType.listening, name="lifts skipping")
+
+STARTING: Final[discord.CustomActivity] = discord.CustomActivity(name="STARTING")

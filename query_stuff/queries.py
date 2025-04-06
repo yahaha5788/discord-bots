@@ -478,11 +478,15 @@ def qualifiedSTATES(number) -> QueryResult:
 
     qualified_events = [event for event in qualifiable_events for award in event.event.awards if number == str(award.teamNumber) and ((award.type == 'Winner' and (award.placement in (1, 2))) or (award.type == 'Inspire' and award.placement == 1))]
 
-    qualified_events = formatTeamEventData(qualified_events[0], team.number)
+    if not qualified_events:
+        qualified_event = None
+        has_qualified = False
+    else:
+        qualified_event = formatTeamEventData(qualified_events[0], team.number)
+        has_qualified = True
 
     team = Team(team.name, team.number)
-    has_qualified = True if qualified_events else False
-    result = TeamQualified(team, has_qualified, qualified_events)
+    result = TeamQualified(team, has_qualified, qualified_event)
 
     return QueryResult(result, success)
 

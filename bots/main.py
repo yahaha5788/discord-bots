@@ -1,4 +1,4 @@
-from harold_cogs import bot as harold
+from harold import bot as harold
 #from polaroidsupercolorinstantcamera import bot as polaroid
 from dotenv import load_dotenv
 import os

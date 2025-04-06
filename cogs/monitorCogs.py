@@ -30,13 +30,13 @@ class MonitorCog(commands.Cog):
             await ctx.send("Please enter a valid number.")
             return
 
-        guild_id = ctx.guild.id
+        guild_id = str(ctx.guild.id)
 
-        with open('following', 'r+') as following:
+        with open('../bots/following.json', 'r+') as following:
             followed_teams: dict[str, list[str]] = json.load(following)
 
             if guild_id not in followed_teams.keys():
-                followed_teams[guild_id]: list[str] = []
+                followed_teams[guild_id] = []
 
             if number in followed_teams[guild_id]:
                 await ctx.send(f"You are already following Team {number}, {queries.nameFromNumber(number)}")
@@ -61,9 +61,9 @@ class MonitorCog(commands.Cog):
             await ctx.send("Please enter a valid number.")
             return
 
-        guild_id = ctx.guild.id
+        guild_id = str(ctx.guild.id)
 
-        with open('following', 'r+') as following:
+        with open('../bots/following.json', 'r+') as following:
             followed_teams: dict[str, list[str]] = json.load(following)
 
             if guild_id not in followed_teams.keys():
@@ -90,7 +90,7 @@ class MonitorCog(commands.Cog):
         guild_id = str(ctx.guild.id)
         channel_id = ctx.channel.id
 
-        with open('channel_des.json', 'r+') as channel_des:
+        with open('../bots/channel_des.json', 'r+') as channel_des:
             channels: dict[str, int] = json.load(channel_des)
             channels[guild_id] = channel_id
 
@@ -102,7 +102,7 @@ class MonitorCog(commands.Cog):
 
     @tasks.loop(hours=1)
     async def sendNotifications(self):
-        with open('channel_des.json', 'r') as channels:
+        with open('../bots/channel_des.json', 'r') as channels:
             notif_channels: dict[str, int] = json.load(channels)
 
             for guild_id, channel_id in notif_channels.items():
@@ -110,7 +110,7 @@ class MonitorCog(commands.Cog):
                 if not channel:
                     continue
 
-                with open('following.json', 'r') as following:
+                with open('../bots/following.json', 'r') as following:
                     followed_teams: dict[str, list[str]] = json.load(following)
 
                     if guild_id not in followed_teams.keys():
