@@ -1,4 +1,3 @@
-/misc/keys.env
-/bots/main.py
-/bots/channel_des.json
-/bots/following.json
+/bots/keys.env
+/cogs/channel_des.json
+/cogs/following.json

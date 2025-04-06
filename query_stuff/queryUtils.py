@@ -2,8 +2,8 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.tupleTemplates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores
-from misc.utilMethods import getCodeDesc, appendSuffix
+from misc.templates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores
+from misc.config import getCodeDesc, appendSuffix
 
 def parseQuery(query) -> tuple[bool, SimpleNamespace] | tuple[bool, str]:
     response = requests.post(url="https://api.ftcscout.org/graphql", json={"query": query})
@@ -30,7 +30,7 @@ def formatQStats(auto: SimpleNamespace, teleop: SimpleNamespace, endgame: Simple
 
 def formatLocationData(loc: SimpleNamespace) -> Location:
     csc = f"{loc.city}, {loc.state}, {loc.country}."
-    if not loc.venue:
+    if getattr(loc, 'venue', None) is None:
         return Location(csc)
 
     return Location(csc, loc.venue)

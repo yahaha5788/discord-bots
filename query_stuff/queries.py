@@ -1,11 +1,11 @@
 from . import queryUtils
-from misc.tupleTemplates import *
+from misc.templates import *
 from types import SimpleNamespace
 
-from .queryUtils import formatEventInfo
+from .queryUtils import formatEventInfo, formatTeamEventData
 
 
-def nameFromNumber(number: int) -> str:
+def nameFromNumber(number) -> str:
     query: str = """
 {
     teamByNumber(number: """+str(number)+""") {
@@ -431,20 +431,36 @@ def ongoingEvents(number) -> QueryResult:
 
     return QueryResult(result, success)
 
-def qualified(number) -> QueryResult:
+def qualifiedSTATES(number) -> QueryResult:
     query: str = """
 {
-    teamByNumber(number: 14988) {
+    teamByNumber(number: """+number+""") {
         name
         number
         events(season: 2024) {
             event {
                 name
                 type
+                start
+                started
                 awards {
                     teamNumber
                     type
                     placement
+                }
+                location {
+                    city
+                    state
+                    country
+                    venue
+                }
+            }
+            stats {
+                ... on TeamEventStats2024 {
+                    w: wins
+                    l: losses
+                    t: ties
+                    rank
                 }
             }
         }
@@ -458,13 +474,73 @@ def qualified(number) -> QueryResult:
 
     team = data.data.teamByNumber
 
-    events = team.events
+    qualifiable_events = [event for event in team.events if event.event.type in ('Qualifier', 'LeagueTournament')]
 
-    qualifiable_events = [event for event in events if event.type == 'Qualifier' or event.type == 'LeagueTournament'] # i'm sorry.
-    qualified_events = [event for event in qualifiable_events for award in event.awards if number == award.teamNumber and (award.type == 'Winner' and award.placement == 1 or award.placement == 2) or (award.type == 'Inspire' and award.placement == 1)]
+    qualified_events = [event for event in qualifiable_events for award in event.event.awards if number == str(award.teamNumber) and ((award.type == 'Winner' and (award.placement in (1, 2))) or (award.type == 'Inspire' and award.placement == 1))]
+
+    qualified_events = formatTeamEventData(qualified_events[0], team.number)
 
     team = Team(team.name, team.number)
     has_qualified = True if qualified_events else False
-    result = TeamQualified(team, has_qualified, qualified_events[0])
+    result = TeamQualified(team, has_qualified, qualified_events)
+
+    return QueryResult(result, success)
+
+def qualifiedWORLDS(number) -> QueryResult:
+    query: str = """
+{
+    teamByNumber(number: """+number+""") {
+        name
+        number
+        events(season: 2024) {
+            event {
+                name
+                type
+                start
+                started
+                awards {
+                    teamNumber
+                    type
+                    placement
+                }
+                location {
+                    city
+                    state
+                    country
+                    venue
+                }
+            }
+            stats {
+                ... on TeamEventStats2024 {
+                    w: wins
+                    l: losses
+                    t: ties
+                    rank
+                }
+            }
+        }
+    }
+}
+"""
+
+    success, data = queryUtils.parseQuery(query)
+    if not success:
+        return QueryResult(data, success)
+
+    team = data.data.teamByNumber
+
+    qualifiable_events = [event for event in team.events if event.event.type == 'Championship']
+
+    qualified_events = [event for event in qualifiable_events for award in event.event.awards if number == str(award.teamNumber) and ((award.type == 'Winner' and (award.placement in (1, 2))) or (award.type == 'Inspire' and award.placement == 1))]
+
+    if not qualified_events:
+        qualified_event = None
+        has_qualified = False
+    else:
+        qualified_event = formatTeamEventData(qualified_events[0], team.number)
+        has_qualified = True
+
+    team = Team(team.name, team.number)
+    result = TeamQualified(team, has_qualified, qualified_event)
 
     return QueryResult(result, success)

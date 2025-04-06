@@ -6,10 +6,26 @@
             event {
                 name
                 type
+                start
+                started
                 awards {
                     teamNumber
                     type
                     placement
+                }
+                location {
+                    city
+                    state
+                    country
+                    venue
+                }
+            }
+            stats {
+                ... on TeamEventStats2024 {
+                    w: wins
+                    l: losses
+                    t: ties
+                    rank
                 }
             }
         }
