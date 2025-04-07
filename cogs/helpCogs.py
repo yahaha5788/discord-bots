@@ -94,8 +94,9 @@ class HelpCMD(commands.HelpCommand):
 
         for command in commands_to_show:
             cmd_name = f"`{command.name}`"
-            cmd_desc = command.description or "No description available"
-            field_text = f"{cmd_desc}\n"
+            cmd_desc = command.brief or "No description available."
+            cmd_usage = command.usage or "Usage not specified."
+            field_text = f"{cmd_desc}\n{cmd_usage}\n"
 
             if current_length + len(cmd_name) + len(field_text) > CHARACTER_LIMIT:
                 pages.append(current_page)
