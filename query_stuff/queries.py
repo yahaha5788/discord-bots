@@ -372,7 +372,7 @@ def upcomingEvents(number) -> QueryResult:
 
     events = team.events
 
-    unplayed_events = [event for event in events if not event.started]
+    unplayed_events = [event for event in events if not event.event.started]
 
     ev: list[Event] = []
 
@@ -418,7 +418,7 @@ def ongoingEvents(number) -> QueryResult:
 
     events = team.events
 
-    ongoing_events = [event for event in events if event.ongoing]
+    ongoing_events = [event for event in events if event.event.ongoing]
 
     ev: list[Event] = []
 
@@ -427,7 +427,7 @@ def ongoingEvents(number) -> QueryResult:
 
     t = Team(team.name, team.number)
 
-    result = UpcomingEvents(t, ev)
+    result = OngoingEvents(t, ev)
 
     return QueryResult(result, success)
 

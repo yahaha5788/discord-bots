@@ -21,7 +21,10 @@ class EventCog(commands.Cog):
         aliases=['ev'],
         usage=f"{COMMAND_PREFIX}teamevents <number>",
         brief="Gets all events a team has had or will have.",
-        description="Gets all events a team has had or will have, and their stats for events they've played."
+        description="Gets all events a team has had or will have, and their stats for events they've played.",
+        parameters={
+            '<number>': 'The number of the team to query for.'
+        }
     )
     async def teamevents(self, ctx, number):
         if not checkValidNumber(number):
@@ -50,7 +53,11 @@ class EventCog(commands.Cog):
         aliases=['calendar'],
         description='Gets any events that a team has not played yet, and shows their location. The command can also be told to create a discord event for each event',
         brief="Gets all the events a team has not played yet.",
-        usage=f"{COMMAND_PREFIX}upcomingevents <number> <create_event>"
+        usage=f"{COMMAND_PREFIX}upcomingevents <number> <create_event>",
+        parameters={
+            '<number>': 'The number of the team.',
+            '<create_event>': 'Enter "Yes" to create events based on the upcoming events of the team.'
+        }
     )
     async def upcomingevents(self, ctx, number, create_event):
         raise NotImplementedError() # TODO: IMPLEMENT BASICS THEN CODE EVENT CREATION
@@ -67,9 +74,12 @@ class QualificationCog(commands.Cog):
     @categorizedCommand(
         category='qualification',
         aliases=['states', 'qualstates'],
-        description='',
-        brief='',
-        usage=f'{COMMAND_PREFIX}qualifiedforstates <number>'
+        description="Checks if a team has qualified for states. If they have, gets the data and the team's stats for the event they qualified in.",
+        brief='Checks if a team has qualified for states.',
+        usage=f'{COMMAND_PREFIX}qualifiedforstates <number>',
+        parameters={
+            '<number>': 'The number of the team to query for.'
+        }
     )
     async def qualifiedstates(self, ctx, number):
         if not checkValidNumber(number):
@@ -103,7 +113,10 @@ class QualificationCog(commands.Cog):
         aliases=['worlds', 'qualworlds'],
         description="Checks if a team has qualified for worlds. If they have, gets the data and the team's stats for the event they qualified in.",
         brief='Checks if a team has qualified for worlds.',
-        usage=f'{COMMAND_PREFIX}qualifiedforworlds <number>'
+        usage=f'{COMMAND_PREFIX}qualifiedforworlds <number>',
+        parameters={
+            '<number>': 'The number of the team to query for.'
+        }
     )
     async def qualifiedforworlds(self, ctx, number):
         if not checkValidNumber(number):

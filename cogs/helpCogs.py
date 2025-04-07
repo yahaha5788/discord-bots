@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 from discord import ButtonStyle
 
-from misc.config import EMBED_COLOR, CHARACTER_LIMIT, COMMAND_PREFIX, gatherCommands, CategorizedCommand
+from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherCommands, CategorizedCommand
+from misc.templates import formatUsage
 
 
 class HelpCMD(commands.HelpCommand):
@@ -62,11 +63,18 @@ class HelpCMD(commands.HelpCommand):
 
         await self.context.send(embed=pages[current_index], view=help_view)
 
-    async def send_command_help(self, command):
-
+    async def send_command_help(self, command: CategorizedCommand):
         title = f"Help: {command.name}"
-        description = f"Usage: {command.usage}\n{command.description}"
-        help_embed = discord.Embed(title=title, description=description, color=EMBED_COLOR)
+        help_embed = discord.Embed(title=title, color=EMBED_COLOR)
+
+        help_embed.add_field(name='Category', value=command.category, inline=False)
+
+        help_embed.description = command.description
+
+        name, value = formatUsage(command.usage, command.aliases, command.parameters)
+
+        help_embed.add_field(name=name, value=value, inline=False)
+
         await self.context.send(embed=help_embed)
 
     async def send_group_help(self, category):

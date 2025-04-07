@@ -16,7 +16,10 @@ class RecordCog(commands.Cog):
         aliases=['topteam', 'bt'],
         description='Queries the best team from ftcscout.org with an optional region modifier to search within a given region',
         brief="Gets the best team from ftcscout.org",
-        usage="$bestteam <region>"
+        usage=f"{COMMAND_PREFIX}bestteam <region>",
+        parameters={
+            "<region>": "An optional argument for the region to search in. Defaults to All."
+        }
     )
     async def bestteam(self, ctx, region='All'):
         data, success = queries.bestTeam(region)
@@ -49,8 +52,11 @@ class RecordCog(commands.Cog):
         category='records',
         aliases=['wr', 'worldrecord', 'bm'],
         description='Queries the best match from ftcscout.org with an optional region modifier to search within a given region',
-        brief="",
-        usage=f"{COMMAND_PREFIX}bestmatch <region>"
+        brief="Gets the best match from ftcscout.org.",
+        usage=f"{COMMAND_PREFIX}bestmatch <region>",
+        parameters={
+            "<region>": "An optional argument for the region to search in. Defaults to All."
+        }
     )
     async def bestmatch(self, ctx, region='All'):
         data, success = queries.bestMatch(region)

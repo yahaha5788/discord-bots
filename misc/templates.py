@@ -122,7 +122,7 @@ class UpcomingEventCheck(NamedTuple):
     current_events: UpcomingEvents
 
 class OngoingEventCheck(NamedTuple):
-    last_events: OngoingEvents
+    last_event: OngoingEvents
     current_event: OngoingEvents
 
 #------------------------ TEMPLATES -----------------------------------------#
@@ -202,3 +202,13 @@ def addSponsors(sponsors: list[str], string: str) -> str:
         string = string + f"{sponsor}\n"
 
     return string
+
+#------------------------------ HELP ----------------------------#
+def formatUsage(usage: str, aliases: list[str], parameters: dict[str, str]) -> tuple[str, str]:
+    name = "Usage"
+    value = f"`{usage}`\nOther names: {[f'`{alias}`' for alias in aliases]}"
+    if parameters:
+        for parameter, use in parameters.items():
+            value = value + f"\n`{parameter}`: {use}"
+
+    return name, value

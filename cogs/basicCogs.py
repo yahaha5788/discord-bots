@@ -1,3 +1,5 @@
+from types import NoneType
+
 from discord.ext import commands
 import discord
 from random import randint, choice
@@ -16,7 +18,10 @@ class FunCog(commands.Cog):
         aliases=['roll'],
         description='Rolls a die with a given number of sides',
         brief="Rolls a die with a given number of sides",
-        usage=f"{COMMAND_PREFIX}dice <sides>"
+        usage=f"{COMMAND_PREFIX}dice <sides>",
+        parameters={
+            '<sides>': "The number of sides on the die."
+        }
     )
     async def dice(self, ctx, sides=6):
         roll = randint(0, sides)
@@ -28,7 +33,7 @@ class FunCog(commands.Cog):
         aliases=['coin'],
         description='Flips a coin.',
         brief="Flips a coin.",
-        usage=f"{COMMAND_PREFIX}flip"
+        usage=f"{COMMAND_PREFIX}flip",
     )
     async def flip(self, ctx):
         result = 'heads' if randint(0, 1) == 1 else "tails"
@@ -51,8 +56,11 @@ class FunCog(commands.Cog):
         category='fun',
         aliases=['questions', 'quiz'],
         description='Play trivia about FIRST.',
-        brief="lay trivia about FIRST.",
-        usage=f"{COMMAND_PREFIX}trivia <number_of_questions>"
+        brief="Play trivia about FIRST.",
+        usage=f"{COMMAND_PREFIX}trivia <number_of_questions>",
+        parameters={
+            '<number_of_questions>': 'The number of questions the bot will ask'
+        }
     )
     async def trivia(ctx, number_of_questions=1):
         raise NotImplementedError() # TODO: IMPLEMENT

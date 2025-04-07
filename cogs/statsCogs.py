@@ -20,7 +20,10 @@ class StatsCog(commands.Cog):
         aliases=['qstats', 'qs'],
         usage=f"{COMMAND_PREFIX}quickstats <number>",
         brief="Gets the quickstats of a team.",
-        description='Gets the quickstats of a given team by their number from ftcscout.org.'
+        description='Gets the quickstats of a given team by their number from ftcscout.org.',
+        parameters={
+            "<number>": "The number of the team to query for."
+        }
     )
     async def quickstats(self, ctx, number):
         if not checkValidNumber(number):
@@ -48,18 +51,24 @@ class StatsCog(commands.Cog):
     @categorizedCommand(
         category='stats',
         aliases=['stat'],
-        description='',
-        brief="",
-        usage=f"{COMMAND_PREFIX}customstat <number> <stat>"
+        description='NOT IMPLEMENTED',
+        brief="NOT IMPLEMENTED",
+        usage=f"{COMMAND_PREFIX}customstat <number> <stat> <value> <period>",
+        parameters={
+            "<number>": "The number of the team to query for.",
+            "<stat>": "The specific statistic to query for. Options are: teleop, auto, np, sample, specimen, park",
+            "<value>": "The value of statistic to query for. Options are: avg (default), max, min",
+            "<period>": "The period of a match to search in. Options are: teleop (default), auto"
+        }
     )
-    async def customstat(self, ctx, number, stat):
+    async def customstat(self, ctx, number, stat, value='avg', period='teleop'):
         raise NotImplementedError() # TODO: IMPLEMENT
 
     @categorizedCommand(
         category='stats',
         aliases=['betterteam', 'compare'],
-        description='',
-        brief="",
+        description='NOT IMPLEMENTED',
+        brief="NOT IMPLEMENTED",
         usage=f"{COMMAND_PREFIX}compareteams <team_number_1> <team_number_2>"
     )
     async def compareteams(self, ctx, team_number_1, team_number_2):
@@ -68,8 +77,8 @@ class StatsCog(commands.Cog):
     @categorizedCommand(
         category='stats',
         aliases=['recentscores', 'recent'],
-        description='',
-        brief="",
+        description='NOT IMPLEMENTED',
+        brief="NOT IMPLEMENTED",
         usage=f"{COMMAND_PREFIX}recentmatches <number>"
     )
     async def recentmatches(self, ctx, number):
@@ -88,7 +97,10 @@ class InfoCog(commands.Cog):
         aliases=['ti'],
         usage=f"{COMMAND_PREFIX}teaminfo <number>",
         brief="Gets information on a team",
-        description='Gets information on a team, like their rookie year or website link by their number from ftcscout.org'
+        description='Gets information on a team, like their rookie year or website link by their number from ftcscout.org',
+        parameters={
+            "<number>": "The number of the team to query for."
+        }
     )
     async def teaminfo(self, ctx, number):
         if not checkValidNumber(number):

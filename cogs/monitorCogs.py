@@ -2,7 +2,7 @@ import json
 import discord
 from discord.ext import commands, tasks
 
-from misc.templates import UpcomingEventCheck, unplayedEventTemplate, OngoingEventCheck
+from misc.templates import unplayedEventTemplate, UpcomingEvents, OngoingEvents, Event
 from query_stuff import queries
 
 from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, checkValidNumber, categorizedCommand
@@ -11,8 +11,22 @@ from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, checkValidNumber
 class MonitorCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.FOLLOWED_TEAMS_ONGOING_EVENTS: dict[str, OngoingEventCheck] = {}
-        self.FOLLOWED_TEAMS_UPCOMING_EVENTS: dict[str, UpcomingEventCheck] = {}
+        self.FOLLOWED_TEAMS_ONGOING_EVENTS: dict[str, OngoingEventChecker] = {}
+        self.FOLLOWED_TEAMS_UPCOMING_EVENTS: dict[str, UpcomingEventChecker] = {}
+
+    async def startNotificationLoop(self):
+        self.setEvents()
+        await self.sendNotifications.start()
+
+    def setEvents(self):
+        with open('../bots/following.json', 'r') as following:
+            followed_teams: dict[str, list[str]] = json.load(following)
+            for numbers in followed_teams.values():
+                for number in numbers:
+                    data, success = queries.ongoingEvents(number)
+                    self.FOLLOWED_TEAMS_ONGOING_EVENTS[number] = OngoingEventChecker(data, data)
+                    data, success = queries.upcomingEvents(number)
+                    self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number] = UpcomingEventChecker(data, data)
 
     @commands.group(invoke_without_command=True)
     async def monitor(self, ctx):
@@ -21,9 +35,12 @@ class MonitorCog(commands.Cog):
     @categorizedCommand(
         category='monitor',
         aliases=['support', 'track', 'follow'],
-        description='',
-        brief="",
-        usage=f"{COMMAND_PREFIX}favorite <number>"
+        description='Follows a team. If a channel if designated, the bot will send notifications if the team if currently participating in an event, or if they have a new upcoming event.',
+        brief="Follows a team",
+        usage=f"{COMMAND_PREFIX}favorite <number>",
+        parameters={
+            '<number>': 'The number of the team to follow.'
+        }
     )
     async def favorite(self, ctx, number):
         if not checkValidNumber(number):
@@ -32,8 +49,12 @@ class MonitorCog(commands.Cog):
 
         guild_id = str(ctx.guild.id)
 
-        with open('../bots/following.json', 'r+') as following:
+        with open('../bots/following.json', 'r+') as following, open('../bots/channel_des.json', 'r') as channel_des:
             followed_teams: dict[str, list[str]] = json.load(following)
+            channels: dict[str, int] = json.load(channel_des)
+
+            if guild_id not in channels.keys():
+                await ctx.send(f"You have not designated a channel to send notifications in. Run {COMMAND_PREFIX}designatechannel in a channel to set that channel as the notification channel")
 
             if guild_id not in followed_teams.keys():
                 followed_teams[guild_id] = []
@@ -52,9 +73,12 @@ class MonitorCog(commands.Cog):
     @categorizedCommand(
         category='monitor',
         aliases=['unfollow'],
-        description='',
-        brief="",
-        usage=f"{COMMAND_PREFIX}unfavorite <number>"
+        description='Unfollows a team. If the guild was previously receiving notifications about this team, they will no longer.',
+        brief="Unfollows a team.",
+        usage=f"{COMMAND_PREFIX}unfavorite <number>",
+        parameters={
+            '<number>': 'The number of the team to query for.'
+        }
     )
     async def unfavorite(self, ctx, number):
         if not checkValidNumber(number):
@@ -72,6 +96,7 @@ class MonitorCog(commands.Cog):
 
             if number not in followed_teams[guild_id]:
                 await ctx.send(f"You are not following {number}.")
+                return
 
             followed_teams[guild_id].remove(number)
             following.seek(0)
@@ -82,8 +107,8 @@ class MonitorCog(commands.Cog):
 
     @categorizedCommand(
         category='monitor',
-        description='',
-        brief="",
+        description='Designates the channel for notifications. This is where hourly notifications will be sent about followed teams.',
+        brief="Sets the channel where notifications will be sent.",
         usage=f"{COMMAND_PREFIX}designatechannel"
     )
     async def designatechannel(self, ctx):
@@ -102,70 +127,123 @@ class MonitorCog(commands.Cog):
 
     @tasks.loop(hours=1)
     async def sendNotifications(self):
-        with open('../bots/channel_des.json', 'r') as channels:
+        with open('../bots/channel_des.json', 'r') as channels, open('../bots/following.json', 'r') as following:
             notif_channels: dict[str, int] = json.load(channels)
+            followed_teams: dict[str, list[str]] = json.load(following)
 
             for guild_id, channel_id in notif_channels.items():
                 channel = self.bot.get_channel(channel_id)
                 if not channel:
                     continue
 
-                with open('../bots/following.json', 'r') as following:
-                    followed_teams: dict[str, list[str]] = json.load(following)
+                if guild_id not in followed_teams.keys():
+                    continue
 
-                    if guild_id not in followed_teams.keys():
+                followed_teams: list[str] = followed_teams[guild_id]
+
+                for number in followed_teams:
+
+                    data, success = queries.upcomingEvents(number)
+                    if not success:
                         continue
 
-                    followed_teams: list[str] = followed_teams[guild_id]
+                    self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number].last = self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number].current
+                    self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number].current = data
 
-                    for number in followed_teams:
-                        # UPCOMING EVENTS
-                        data, success = queries.upcomingEvents(number)
-                        if not success:
-                            continue
+                    if self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number].has_changed:
+                        events = self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number].changes
+                    else:
+                        continue
 
-                        team_upcoming_events: UpcomingEventCheck = self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number]
-                        team_upcoming_events.last_events = team_upcoming_events.current_events
-                        team_upcoming_events.current_events = data
+                    title = f"Team {number}, {queries.nameFromNumber(number)} has a new event!"
+                    desc = ""
 
-                        if team_upcoming_events.last_events != team_upcoming_events.current_events:
-                            events = [event for event in team_upcoming_events.current_events.events if event not in team_upcoming_events.last_events.events]  # teehee
-                        else:
-                            continue
+                    for event in events:
+                        desc = desc + unplayedEventTemplate(event) + "\n"
 
-                        title = f"Team {number}, {queries.nameFromNumber(number)} has a new event!"
-                        desc = ""
+                    unplayed_notif_embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
+                    setFooter(unplayed_notif_embed)
 
-                        for event in events:
-                            desc = desc + unplayedEventTemplate(event) + "\n"
+                    await channel.send(embed=unplayed_notif_embed)
 
-                        unplayed_notif_embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
-                        setFooter(unplayed_notif_embed)
 
-                        await channel.send(embed=unplayed_notif_embed)
+                    data, success = queries.ongoingEvents(number)
+                    if not success:
+                        continue
 
-                    for number in followed_teams:
-                        # ONGOING EVENTS
-                        data, success = queries.ongoingEvents(number)
-                        if not success:
-                            continue
+                    self.FOLLOWED_TEAMS_ONGOING_EVENTS[number].last = self.FOLLOWED_TEAMS_ONGOING_EVENTS[number].current
+                    self.FOLLOWED_TEAMS_ONGOING_EVENTS[number].current = data
 
-                        team_ongoing_events: OngoingEventCheck = self.FOLLOWED_TEAMS_ONGOING_EVENTS[number]
-                        team_ongoing_events.last_events = team_ongoing_events.current_events
-                        team_ongoing_events.current_events = data
+                    if self.FOLLOWED_TEAMS_ONGOING_EVENTS[number].has_changed:
+                        events = self.FOLLOWED_TEAMS_ONGOING_EVENTS[number].changes
+                    else:
+                        continue
 
-                        if team_ongoing_events.last_events != team_ongoing_events.current_events:
-                            events = [event for event in team_ongoing_events.current_events.events if event not in team_ongoing_events.last_events.events]  # teehee
-                        else:
-                            continue
+                    title = f"Team {number}, {queries.nameFromNumber(number)} is currently playing in an event!"
+                    desc = ""
 
-                        title = f"Team {number}, {queries.nameFromNumber(number)} is currently playing in an event!"
-                        desc = ""
+                    for event in events:
+                        desc = desc + unplayedEventTemplate(event) + "\n"
 
-                        for event in events:
-                            desc = desc + unplayedEventTemplate(event) + "\n"
+                    ongoing_notif_embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
+                    setFooter(ongoing_notif_embed)
 
-                        ongoing_notif_embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
-                        setFooter(ongoing_notif_embed)
+                    await channel.send(embed=ongoing_notif_embed)
 
-                        await channel.send(embed=ongoing_notif_embed)
+class UpcomingEventChecker: #please help me i'm going insane
+    def __init__(self, current: UpcomingEvents, last: UpcomingEvents):
+        self.current = current
+        self.last = last
+
+    @property
+    def current(self) -> UpcomingEvents:
+        return self.current
+
+    @property
+    def last(self) -> UpcomingEvents:
+        return self.last
+
+    @last.setter
+    def last(self, value):
+        self.last = value
+
+    @current.setter
+    def current(self, value):
+        self.current = value
+
+    @property
+    def has_changed(self) -> bool:
+        return self.current != self.last
+
+    @property
+    def changes(self) -> list[Event]:
+        return [event for event in self.current.events if event not in self.last.events]
+
+class OngoingEventChecker:
+    def __init__(self, current: OngoingEvents, last: OngoingEvents):
+        self.current = current
+        self.last = last
+
+    @property
+    def current(self) -> OngoingEvents:
+        return self.current
+
+    @property
+    def last(self) -> OngoingEvents:
+        return self.last
+
+    @last.setter
+    def last(self, value):
+        self.last = value
+
+    @current.setter
+    def current(self, value):
+        self.current = value
+
+    @property
+    def has_changed(self) -> bool:
+        return self.current != self.last
+
+    @property
+    def changes(self) -> list[Event]:
+        return [event for event in self.current.events if event not in self.last.events]

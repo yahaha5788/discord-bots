@@ -24,6 +24,8 @@ async def on_ready():
 
     await bot.add_cog(monitorCogs.MonitorCog(bot))
 
+    await monitorCogs.MonitorCog(bot).startNotificationLoop()
+
     bot.help_command = helpCogs.HelpCMD()
 
     await bot.change_presence(activity=ACTIVITY)
