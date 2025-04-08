@@ -115,16 +115,6 @@ class TeamQualified(NamedTuple):
     hasQualified: bool
     eventQualified: Event = None
 
-#------------------------OTHER-----------------------#
-
-class UpcomingEventCheck(NamedTuple):
-    last_events: UpcomingEvents
-    current_events: UpcomingEvents
-
-class OngoingEventCheck(NamedTuple):
-    last_event: OngoingEvents
-    current_event: OngoingEvents
-
 #------------------------ TEMPLATES -----------------------------------------#
 
 def awardTemplate(award: Award) -> str:

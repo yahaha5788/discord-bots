@@ -10,7 +10,7 @@ from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, checkValidNumber
 
 class MonitorCog(commands.Cog):
     def __init__(self, bot):
-        self.bot = bot
+        self.bot: discord.ext.commands.Bot = bot
         self.FOLLOWED_TEAMS_ONGOING_EVENTS: dict[str, OngoingEventChecker] = {}
         self.FOLLOWED_TEAMS_UPCOMING_EVENTS: dict[str, UpcomingEventChecker] = {}
 
@@ -127,6 +127,9 @@ class MonitorCog(commands.Cog):
 
     @tasks.loop(hours=1)
     async def sendNotifications(self):
+
+        await self.bot.wait_until_ready()
+
         with open('../bots/channel_des.json', 'r') as channels, open('../bots/following.json', 'r') as following:
             notif_channels: dict[str, int] = json.load(channels)
             followed_teams: dict[str, list[str]] = json.load(following)
@@ -192,24 +195,24 @@ class MonitorCog(commands.Cog):
 
 class UpcomingEventChecker: #please help me i'm going insane
     def __init__(self, current: UpcomingEvents, last: UpcomingEvents):
-        self.current = current
-        self.last = last
+        self.current_event = current
+        self.last_event = last
 
     @property
     def current(self) -> UpcomingEvents:
-        return self.current
+        return self.current_event
 
     @property
     def last(self) -> UpcomingEvents:
-        return self.last
+        return self.last_event
 
     @last.setter
     def last(self, value):
-        self.last = value
+        self.last_event = value
 
     @current.setter
     def current(self, value):
-        self.current = value
+        self.current_event = value
 
     @property
     def has_changed(self) -> bool:
@@ -221,24 +224,24 @@ class UpcomingEventChecker: #please help me i'm going insane
 
 class OngoingEventChecker:
     def __init__(self, current: OngoingEvents, last: OngoingEvents):
-        self.current = current
-        self.last = last
+        self.current_event = current
+        self.last_event = last
 
     @property
     def current(self) -> OngoingEvents:
-        return self.current
+        return self.current_event
 
     @property
     def last(self) -> OngoingEvents:
-        return self.last
+        return self.last_event
 
     @last.setter
     def last(self, value):
-        self.last = value
+        self.last_event = value
 
     @current.setter
     def current(self, value):
-        self.current = value
+        self.current_event = value
 
     @property
     def has_changed(self) -> bool:
