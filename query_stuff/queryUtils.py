@@ -2,7 +2,7 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.templates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores
+from misc.templates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores, EventDates
 from misc.config import getCodeDesc, appendSuffix
 
 def parseQuery(query) -> tuple[bool, SimpleNamespace] | tuple[bool, str]:

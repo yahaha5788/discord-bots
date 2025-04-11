@@ -74,8 +74,10 @@ CHOICES: Final[list] = [
 
 CHARACTER_LIMIT: Final[int] = 500
 
-COMMAND_PREFIX: Final[str] = '$'
+COMMAND_PREFIX: Final[str] = 'h$'
 
-ACTIVITY: Final[discord.Activity] = discord.Activity(type=discord.ActivityType.listening, name="lifts skipping")
+ACTIVITY: Final[discord.Game] = discord.Game(name=f"{COMMAND_PREFIX}help")
 
 STARTING: Final[discord.CustomActivity] = discord.CustomActivity(name="STARTING")
+
+FTC_LOGO: Final[str] =  "../bots/ftc.png"

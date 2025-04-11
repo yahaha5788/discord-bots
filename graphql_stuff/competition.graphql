@@ -1,0 +1,17 @@
+    {
+        eventsSearch(searchText: "edison Division", season: 2024, type: FIRSTChampionship) {
+            start
+            end
+            started
+            ongoing
+            finished
+            name
+            stream: liveStreamURL
+            teams {
+                team {
+                    name
+                    number
+                }
+            }
+        }
+    }  

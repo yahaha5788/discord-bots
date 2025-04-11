@@ -66,6 +66,12 @@ class Match(NamedTuple):
     red: Alliance
     blue: Alliance
 
+class EventDates(NamedTuple):
+    year: str
+    month: str #one event shouldn't take an entire year, let alone one month.
+    start_day: str
+    end_day: str
+
 ########################## QUERY RESULT CLASSES ########################
 
 class QueryResult(NamedTuple):
@@ -114,6 +120,23 @@ class TeamQualified(NamedTuple):
     team: Team
     hasQualified: bool
     eventQualified: Event = None
+
+class MajorQualifyingEvent(NamedTuple):
+    name: str
+    dates: EventDates
+    teams: list[Team]
+    started: bool
+    ongoing: bool
+    finished: bool
+    stream: str = None
+
+class WorldsEvent(NamedTuple):
+    FinalsDiv: MajorQualifyingEvent
+    EdisonDiv: MajorQualifyingEvent
+    JemisonDiv: MajorQualifyingEvent
+    FranklinDiv: MajorQualifyingEvent
+    OchoaDiv: MajorQualifyingEvent
+
 
 #------------------------ TEMPLATES -----------------------------------------#
 
@@ -202,3 +225,12 @@ def formatUsage(usage: str, aliases: list[str], parameters: dict[str, str]) -> t
             value = value + f"\n`{parameter}`: {use}"
 
     return name, value
+
+def eventStarted(started: bool, ongoing: bool) -> str:
+    if started:
+        if ongoing:
+            return "This event is ongoing."
+        else:
+            return "This event has finished."
+    else:
+        return "This event has not started."

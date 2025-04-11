@@ -1,8 +1,8 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from misc.config import COMMAND_PREFIX, ACTIVITY, STARTING
-from cogs import basicCogs, statsCogs, helpCogs, monitorCogs, eventCogs, recordCogs
+from cogs import basicCogs, statsCogs, helpCogs, monitorCogs, eventCogs, recordCogs, competitonCogs, updatesLoop
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -12,20 +12,32 @@ bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents, activity=STAR
 
 @bot.event
 async def on_ready():
-    await bot.add_cog(basicCogs.FunCog(bot))
+    fun_cog = basicCogs.FunCog(bot)
+    await bot.add_cog(fun_cog)
 
-    await bot.add_cog(eventCogs.EventCog(bot))
-    await bot.add_cog(eventCogs.QualificationCog(bot))
+    event_cog = eventCogs.EventCog(bot)
+    quals_cog = eventCogs.QualificationCog(bot)
+    await bot.add_cog(event_cog)
+    await bot.add_cog(quals_cog)
 
-    await bot.add_cog(recordCogs.RecordCog(bot))
+    record_cog = recordCogs.RecordCog(bot)
+    await bot.add_cog(record_cog)
 
-    await bot.add_cog(statsCogs.StatsCog(bot))
-    await bot.add_cog(statsCogs.InfoCog(bot))
+    stats_cog = statsCogs.StatsCog(bot)
+    info_cog = statsCogs.InfoCog(bot)
+    await bot.add_cog(stats_cog)
+    await bot.add_cog(info_cog)
 
-    await bot.add_cog(monitorCogs.MonitorCog(bot))
+    monitor_cog = monitorCogs.MonitorCog(bot)
+    await bot.add_cog(monitor_cog)
+
+    comp_cog = competitonCogs.CompetitionCog(bot)
+    await bot.add_cog(comp_cog)
+
+    updates_loop = updatesLoop.Updates(bot)
+    await bot.add_cog(updates_loop)
 
     bot.help_command = helpCogs.HelpCMD()
+    updates_loop.retrieveCogs()
 
     await bot.change_presence(activity=ACTIVITY)
-
-    await monitorCogs.MonitorCog(bot).startNotificationLoop()

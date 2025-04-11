@@ -1,8 +1,10 @@
-from . import queryUtils
+#from . import queryUtils
+from queryUtils import *
+import queryUtils
 from misc.templates import *
 from types import SimpleNamespace
 
-from .queryUtils import formatEventInfo, formatTeamEventData
+#from .queryUtils import formatEventInfo, formatTeamEventData
 
 
 def nameFromNumber(number) -> str:
@@ -546,5 +548,58 @@ def qualifiedWORLDS(number) -> QueryResult:
 
     team = Team(team.name, team.number)
     result = TeamQualified(team, has_qualified, qualified_event)
+
+    return QueryResult(result, success)
+
+def worldsQuery(div: str) -> str:
+    return '''
+    {
+        eventsSearch(searchText: "''' + div + ''' Division", season: 2024, type: FIRSTChampionship) {
+            start
+            end
+            started
+            ongoing
+            finished
+            name
+            stream: liveStreamURL
+            teams {
+                team {
+                    name
+                    number
+                }
+            }
+        }
+
+    }    
+    '''
+
+def worlds() -> QueryResult:
+    divs: list[MajorQualifyingEvent] = []
+    for i in ['finals', 'edison', 'jemison', 'franklin', 'ochoa']:
+
+        query = worldsQuery(i)
+
+        success, data = queryUtils.parseQuery(query)
+        if not success:
+            return QueryResult(data, success)
+
+        div = data.data.eventsSearch[0]
+
+        e = div.end.split(sep="-") #eg: ['2025', '04', '19']
+        s = div.start.split(sep="-") #eg: ['2025', '04', '15']
+        start: EventDates = EventDates(s[0], s[1], s[2], e[2])
+
+        div_name = div.name
+
+        teams: list[Team] = []
+
+        stream: str = div.stream
+
+        for team in div.teams:
+            teams.append(Team(team.team.name, team.team.number))
+
+        divs.append(MajorQualifyingEvent(div_name, start, teams, div.started, div.ongoing, div.finished, stream))
+
+    result = WorldsEvent(divs[0], divs[1], divs[2], divs[3], divs[4])
 
     return QueryResult(result, success)
