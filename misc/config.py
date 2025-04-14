@@ -23,10 +23,6 @@ CHOICES: Final[list] = [
 
 CHARACTER_LIMIT: Final[int] = 500
 
-COMMAND_PREFIX: Final[str] = '/' #i don't want to go through my entire code and change this to just '/'
-
-PLACEHOLDER_PREFIX: Final[str] = 'h$'
-
 ACTIVITY: Final[discord.Activity] = discord.Activity(type=discord.ActivityType.listening, name='to lifts skipping')
 
 STARTING: Final[discord.CustomActivity] = discord.CustomActivity(name="STARTING")

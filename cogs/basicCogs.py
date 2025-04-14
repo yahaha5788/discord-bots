@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord import Interaction
 import discord
 from random import randint, choice
-from misc.config import EMBED_COLOR, CHOICES, COMMAND_PREFIX, commandAttrs, addAppCommand
+from misc.config import EMBED_COLOR, CHOICES, commandAttrs, addAppCommand, setFooter
 
 
 class FunCog(commands.Cog):
@@ -28,6 +28,7 @@ class FunCog(commands.Cog):
     async def dice(self, interaction: Interaction, sides: int = 6):
         roll = randint(1, int(sides))
         dice_embed = discord.Embed(title=":game_die:", description=f"You rolled a **{roll}** on a **{sides}** sided die.", color=EMBED_COLOR)
+        setFooter(dice_embed)
         await interaction.response.send_message(embed=dice_embed)
 
 
@@ -41,6 +42,7 @@ class FunCog(commands.Cog):
     async def flip(self, interaction: Interaction):
         result = 'heads' if randint(0, 1) == 1 else "tails"
         coin_embed = discord.Embed(title="Flipped a coin!", description=f"The :coin: landed on {result}.", color=EMBED_COLOR)
+        setFooter(coin_embed)
         await interaction.response.send_message(embed=coin_embed)
 
     @commandAttrs(
@@ -53,6 +55,7 @@ class FunCog(commands.Cog):
     async def eightball(self, interaction: Interaction):
         result = choice(CHOICES)
         eightball_embed = discord.Embed(title='The :8ball: says:', description=result, color=EMBED_COLOR)
+        setFooter(eightball_embed)
         await interaction.response.send_message(embed=eightball_embed)
 
     @commandAttrs(

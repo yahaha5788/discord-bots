@@ -2,7 +2,8 @@ import discord
 from discord.ext import commands
 from discord import ButtonStyle
 
-from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherAppCommands, addAppCommand, commandAttrs, CategorizedAppCommand, sortCategoryCommands, sortAllCommands
+from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherAppCommands, addAppCommand, commandAttrs, \
+    CategorizedAppCommand, sortCategoryCommands, sortAllCommands, setFooter
 from misc.templates import formatUsage
 
 
@@ -35,6 +36,7 @@ class HelpCog(commands.Cog):
                 category_commands = category_commands + f"{cmd_name}: {cmd_desc}\n"
 
             if current_length + len(category) + len(category_commands) > CHARACTER_LIMIT:
+                setFooter(current_page)
                 pages.append(current_page)
                 current_page = discord.Embed(
                     title="Help Menu",
@@ -46,6 +48,7 @@ class HelpCog(commands.Cog):
             current_page.add_field(name=category, value=category_commands, inline=False)
             current_length += len(category) + len(category_commands)
 
+        setFooter(current_page)
         pages.append(current_page)
 
         current_index = 0
@@ -85,6 +88,8 @@ class HelpCog(commands.Cog):
 
         help_embed.add_field(name=name, value=value, inline=False)
 
+        setFooter(help_embed)
+
         await interaction.response.send_message(embed=help_embed)
 
     async def categoryHelp(self, interaction: discord.Interaction, commands_in_category, category):
@@ -104,6 +109,7 @@ class HelpCog(commands.Cog):
             field_text = f"{cmd_desc}\n{cmd_usage}\n"
 
             if current_length + len(cmd_name) + len(field_text) > CHARACTER_LIMIT:
+                setFooter(current_page)
                 pages.append(current_page)
                 current_page = discord.Embed(title=f"Help: {category}", color=EMBED_COLOR)
                 current_length = 0
@@ -111,6 +117,7 @@ class HelpCog(commands.Cog):
             current_page.add_field(name=cmd_name, value=field_text, inline=False)
             current_length += len(cmd_name) + len(field_text)
 
+        setFooter(current_page)
         pages.append(current_page)
 
         current_index = 0

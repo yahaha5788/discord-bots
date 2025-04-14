@@ -3,13 +3,13 @@ from discord.ext import commands
 
 from cogs import basicCogs, competitonCogs, eventCogs, monitorCogs, recordCogs, statsCogs, helpCogs
 
-from misc.config import ACTIVITY, VALID_GUILDS, PLACEHOLDER_PREFIX, STARTING
+from misc.config import ACTIVITY, VALID_GUILDS, STARTING
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix=PLACEHOLDER_PREFIX, intents=intents, activity=ACTIVITY)
+bot = commands.Bot(command_prefix='h$', intents=intents, activity=STARTING)
 
 @bot.event
 async def on_ready():
@@ -32,4 +32,5 @@ async def on_ready():
     for guild in VALID_GUILDS:
         await bot.tree.sync(guild=guild)
 
+    await bot.change_presence(activity=ACTIVITY)
     print('Bot is ready')

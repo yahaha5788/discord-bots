@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 from misc.templates import unplayedEventTemplate, UpcomingEvents, OngoingEvents, Event
 from query_stuff import queries
 
-from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, commandAttrs, addAppCommand
+from misc.config import EMBED_COLOR, setFooter, commandAttrs, addAppCommand
 
 
 class MonitorCog(commands.Cog):
@@ -51,7 +51,7 @@ class MonitorCog(commands.Cog):
             channels: dict[str, int] = json.load(channel_des)
 
             if guild_id not in channels.keys():
-                await interaction.response.send_message(f"You have not designated a channel to send notifications in. Run {COMMAND_PREFIX}designatechannel in a channel to set that channel as the notification channel")
+                await interaction.response.send_message(f"You have not designated a channel to send notifications in. Run /designatechannel in a channel to set that channel as the notification channel")
 
             if guild_id not in followed_teams.keys():
                 followed_teams[guild_id] = []
