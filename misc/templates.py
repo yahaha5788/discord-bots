@@ -219,10 +219,10 @@ def addSponsors(sponsors: list[str], string: str) -> str:
 #------------------------------ HELP ----------------------------#
 def formatUsage(usage: str, parameters: dict[str, str]) -> tuple[str, str]:
     name = "Usage"
-    value = f"`{usage}`"
+    value = f"{usage}"
     if parameters:
         for parameter, use in parameters.items():
-            value = value + f"\n`{parameter}`: {use}"
+            value = value + f"\n{parameter}: {use}"
 
     return name, value
 

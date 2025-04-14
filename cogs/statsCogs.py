@@ -18,7 +18,7 @@ class StatsCog(commands.Cog):
         # self.bot.tree.add_command(addAppCommand(self.bot)(self.compareteams))
 
     @commandAttrs(
-        category='stats',
+        category='Stats',
         usage=f"/quickstats <number>",
         brief="Gets the quickstats of a team.",
         description='Gets the quickstats of a given team by their number from ftcscout.org.',
@@ -47,7 +47,7 @@ class StatsCog(commands.Cog):
         await interaction.response.send_message(embed=qstats_embed)
 
     @commandAttrs(
-        category='stats',
+        category='Stats',
         description='NOT IMPLEMENTED',
         brief="NOT IMPLEMENTED",
         usage=f"/customstat <number> <stat> <value> <period>",
@@ -64,7 +64,7 @@ class StatsCog(commands.Cog):
         # wow really? i couldn't tell that this needs to be implemented
 
     @commandAttrs(
-        category='stats',
+        category='Stats',
         description='NOT IMPLEMENTED',
         brief="NOT IMPLEMENTED",
         usage=f"/compareteams <team_number_1> <team_number_2>",
@@ -78,7 +78,7 @@ class StatsCog(commands.Cog):
         raise NotImplementedError() # TODO: IMPLEMENT
 
     @commandAttrs(
-        category='stats',
+        category='Stats',
         description='NOT IMPLEMENTED',
         brief="NOT IMPLEMENTED",
         usage=f"/recentmatches <number>",
@@ -98,7 +98,7 @@ class InfoCog(commands.Cog):
         self.bot.tree.add_command(addAppCommand(self.bot)(self.teaminfo))
 
     @commandAttrs(
-        category='info',
+        category='Info',
         usage=f"/teaminfo <number>",
         brief="Gets information on a team",
         description='Gets information on a team, like their rookie year or website link by their number from ftcscout.org',

@@ -34,7 +34,7 @@ class MonitorCog(commands.Cog):
                     self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number] = UpcomingEventChecker(data, data)
 
     @commandAttrs(
-        category='monitor',
+        category='Monitor',
         description="Follows a team. Harold will send notifications every hour if the team's events have changed",
         brief="Follows a team",
         usage=f"/follow <number>",
@@ -68,7 +68,7 @@ class MonitorCog(commands.Cog):
         await interaction.response.send_message(f"You are now following Team {number}, {queries.nameFromNumber(number)}")
 
     @commandAttrs(
-        category='monitor',
+        category='Monitor',
         description='Unfollows a team. The guild will stop receiving notifications about the team..',
         brief="Unfollows a team.",
         usage=f"/unfollow <number>",
@@ -99,7 +99,7 @@ class MonitorCog(commands.Cog):
         await interaction.response.send_message(f"You are no longer following Team {number}, {queries.nameFromNumber(number)}")
 
     @commandAttrs(
-        category='monitor',
+        category='Monitor',
         description='Designates the channel for hourly notifications to be sent about followed teams.',
         brief="Sets the channel where notifications will be sent.",
         usage=f"/designatechannel",

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import ButtonStyle
 
-from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherAppCommands, addAppCommand, commandAttrs, CategorizedAppCommand
+from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherAppCommands, addAppCommand, commandAttrs, CategorizedAppCommand, sortCategoryCommands, sortAllCommands
 from misc.templates import formatUsage
 
 
@@ -17,26 +17,34 @@ class HelpCog(commands.Cog):
 
     async def allHelp(self, interaction: discord.Interaction):
         current_page = discord.Embed(
-            title="Help",
-            description="List of available commands:",
+            title="Harold's Commands",
+            description="Type `/help <category>` for help on a specific category!\nType `/help <command>` for help on a specific command!\n",
             color=EMBED_COLOR,
         )
 
         pages = []
         current_length = 0
 
-        for command in self.commands:
-            cmd_name = f"`{command.name}: {command.category}`"
-            cmd_desc = command.brief or "No description available"
-            field_text = f"{cmd_desc}\n"
+        cmd_dict = sortAllCommands(self.commands)
 
-            if current_length + len(cmd_name) + len(field_text) > CHARACTER_LIMIT:
+        for category, command_list in cmd_dict.items():
+            category_commands: str = ''
+            for command in command_list:
+                cmd_name = f"`{command.name}`"
+                cmd_desc = command.brief or "No description available"
+                category_commands = category_commands + f"{cmd_name}: {cmd_desc}\n"
+
+            if current_length + len(category) + len(category_commands) > CHARACTER_LIMIT:
                 pages.append(current_page)
-                current_page = discord.Embed(title="Help Menu", color=EMBED_COLOR)
+                current_page = discord.Embed(
+                    title="Help Menu",
+                    description="Type /help <category> for help on a specific category!\nType /help <command> for help on a specific command!\n",
+                    color=EMBED_COLOR
+                )
                 current_length = 0
 
-            current_page.add_field(name=cmd_name, value=field_text, inline=False)
-            current_length += len(cmd_name) + len(field_text)
+            current_page.add_field(name=category, value=category_commands, inline=False)
+            current_length += len(category) + len(category_commands)
 
         pages.append(current_page)
 
@@ -46,14 +54,14 @@ class HelpCog(commands.Cog):
             nonlocal current_index
             if current_index > 0:
                 current_index -= 1
-            await interact.message.edit(embed=pages[current_index])
+                await interact.message.edit(embed=pages[current_index])
             await interact.response.defer()
 
         async def next_page(interact: discord.Interaction):
             nonlocal current_index
             if current_index < len(pages) - 1:
                 current_index += 1
-            await interact.message.edit(embed=pages[current_index])
+                await interact.message.edit(embed=pages[current_index])
             await interact.response.defer()
 
         backButton = discord.ui.Button(label="⬅️", style=ButtonStyle.grey)
@@ -68,10 +76,8 @@ class HelpCog(commands.Cog):
         await interaction.response.send_message(embed=pages[current_index], view=help_view)
 
     async def commandHelp(self, interaction: discord.Interaction, command: CategorizedAppCommand):
-        title = f"Help: {command.name}"
+        title = f"/{command.name}"
         help_embed = discord.Embed(title=title, color=EMBED_COLOR)
-
-        help_embed.add_field(name='Category', value=command.category, inline=False)
 
         help_embed.description = command.description
 
@@ -83,8 +89,8 @@ class HelpCog(commands.Cog):
 
     async def categoryHelp(self, interaction: discord.Interaction, commands_in_category, category):
         current_page = discord.Embed(
-            title=f"Help: {category}",
-            description=f"Commands in `{category}`:",
+            title=f"{category} Commands",
+            description=f"Type `/help <command>` for help on a specific command.",
             color=EMBED_COLOR,
         )
 
@@ -92,7 +98,7 @@ class HelpCog(commands.Cog):
         current_length = 0
 
         for command in commands_in_category:
-            cmd_name = f"`{command.name}`"
+            cmd_name = f"/{command.name}"
             cmd_desc = command.brief or "No description available."
             cmd_usage = command.usage or "Usage not specified."
             field_text = f"{cmd_desc}\n{cmd_usage}\n"
@@ -146,9 +152,10 @@ class HelpCog(commands.Cog):
     )
     async def help(self, interaction: discord.Interaction, keyword: str = None):
         if keyword:
-            commands_to_show, help_type = gatherAppCommands(self.commands, keyword)
+            commands_to_show, help_type, category = gatherAppCommands(self.commands, keyword)
             if help_type == 'category':
-                await self.categoryHelp(interaction, commands_to_show, keyword)
+                commands_to_show = sortCategoryCommands(commands_to_show)
+                await self.categoryHelp(interaction, commands_to_show, category)
             elif help_type == 'command':
                 await self.commandHelp(interaction, commands_to_show[0])
             else:
@@ -161,7 +168,7 @@ class HelpCog(commands.Cog):
         description='Intro command for new users.',
         brief='Introduction command.',
         usage='/intro',
-        category='help'
+        category='Help'
     )
     async def intro(self, interaction: discord.Interaction):
         title = f"Welcome, {interaction.user.display_name}!"

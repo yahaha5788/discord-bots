@@ -18,7 +18,7 @@ class EventCog(commands.Cog):
         # self.bot.tree.add_command(addAppCommand(self.bot)(self.upcomingevents))
 
     @commandAttrs(
-        category="events",
+        category="Events",
         usage=f"/teamevents <number>",
         brief="Gets all events a team has had or will have.",
         description="Gets all events a team has had or will have, and their stats for events they've played.",
@@ -47,7 +47,7 @@ class EventCog(commands.Cog):
         await interaction.response.send_message(embed=events_embed)
 
     @commandAttrs(
-        category='events',
+        category='Events',
         description='Gets any events that a team has not played yet, and shows their location. The command can also be told to create a discord event for each event',
         brief="Gets all the events a team has not played yet.",
         usage=f"/upcomingevents <number> <create_event>",
@@ -70,7 +70,7 @@ class QualificationCog(commands.Cog):
         self.bot.tree.add_command(addAppCommand(self.bot)(self.qualifiedworlds))
 
     @commandAttrs(
-        category='qualification',
+        category='Qualification',
         description="If a team has qualified for states, will send the team's stats for the event they qualified in.",
         brief='Checks if a team has qualified for states.',
         usage=f'/qualifiedstates <number>',
@@ -103,7 +103,7 @@ class QualificationCog(commands.Cog):
         await interaction.response.send_message(embed=qual_embed)
 
     @commandAttrs(
-        category='qualification',
+        category='Qualification',
         description="If a team has qualified for worlds, will send the team's stats for the event they qualified in.",
         brief='Checks if a team has qualified for worlds.',
         usage=f'/qualifiedworlds <number>',

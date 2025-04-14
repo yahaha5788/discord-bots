@@ -14,7 +14,7 @@ class RecordCog(commands.Cog):
         self.bot.tree.add_command(addAppCommand(self.bot)(self.bestteam))
 
     @commandAttrs(
-        category="records",
+        category="Records",
         description='Gets the best team within a optional given region.',
         brief="Gets the best team from ftcscout.org",
         usage=f"/bestteam <region>",
@@ -51,7 +51,7 @@ class RecordCog(commands.Cog):
         await interaction.response.send_message(embed=embed)
 
     @commandAttrs(
-        category='records',
+        category='Records',
         description='Gets the best match within a optional given region.',
         brief="Gets the best match from ftcscout.org.",
         usage=f"/worldrecord <region>",

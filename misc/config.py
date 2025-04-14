@@ -119,15 +119,31 @@ class CategorizedAppCommand: # basically just wraps every command when the help 
         self.command = command
         self.name, self.description, self.category, self.usage, self.brief, self.param_guide = gatherCommandAttrs(command)
 
-def gatherAppCommands(commands_to_sort: list[CategorizedAppCommand], keyword: str) -> tuple[list[CategorizedAppCommand], str]:
+def gatherAppCommands(commands_to_filter: list[CategorizedAppCommand], keyword: str) -> tuple[list[CategorizedAppCommand], str, Optional[str]]:
     result = []
-    for command in commands_to_sort:
-        if command.category == keyword:
+
+    for command in commands_to_filter:
+        if command.category.lower() == keyword.lower():
             result.append(command)
 
-        if command.name == keyword:
+        if command.name.lower() == keyword.lower():
             result.append(command)
-            return result, 'command'
+            return result, 'command', None
     if not result:
-        return result, 'all'
-    return result, 'category'
+        return result, 'all', None
+    return result, 'category', result[0].category
+
+def sortCategoryCommands(commands_to_sort: list[CategorizedAppCommand]) -> list[CategorizedAppCommand]:
+    return sorted(commands_to_sort, key=lambda cmd: cmd.name.lower())
+
+def sortAllCommands(commands_to_sort: list[CategorizedAppCommand]) -> dict[str, list[CategorizedAppCommand]]:
+    sorted_commands = sorted(commands_to_sort, key=lambda cmd: cmd.category.lower())
+    commands_dict: dict[str, list[CategorizedAppCommand]] = {}
+    for command in sorted_commands:
+        if command.category not in commands_dict.keys(): #creates list of category commands if it does not exist
+            commands_dict[command.category] = []
+
+        commands_dict[command.category].append(command)
+
+    return commands_dict
+

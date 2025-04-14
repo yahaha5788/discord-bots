@@ -20,7 +20,7 @@ class FunCog(commands.Cog):
         description='Rolls a die with a given number of sides',
         usage=f"/dice <sides>",
         brief="Rolls a die with a given number of sides",
-        category='fun',
+        category='Fun',
         param_guide={
             '<sides>': "The number of sides on the die."
         }
@@ -33,7 +33,7 @@ class FunCog(commands.Cog):
 
     @commandAttrs(
         name='flip',
-        category='fun',
+        category='Fun',
         description='Flips a coin.',
         brief="Flips a coin.",
         usage=f"/flip",
@@ -45,7 +45,7 @@ class FunCog(commands.Cog):
 
     @commandAttrs(
         name='eightball',
-        category='fun',
+        category='Fun',
         description='Rolls an eightball.',
         brief='Rolls an eightball.',
         usage=f"/eightball"
@@ -57,7 +57,7 @@ class FunCog(commands.Cog):
 
     @commandAttrs(
         name='trivia',
-        category='fun',
+        category='Fun',
         description='Play trivia about FIRST.',
         brief="Play trivia about FIRST.",
         usage=f"/trivia <number_of_questions>",
