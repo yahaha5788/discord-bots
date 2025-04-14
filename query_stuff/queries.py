@@ -1,6 +1,4 @@
-#from . import queryUtils
-from queryUtils import *
-import queryUtils
+from query_stuff import queryUtils
 from misc.templates import *
 from types import SimpleNamespace
 
@@ -336,7 +334,7 @@ def bestMatch(region) -> QueryResult:
     red: Alliance = Alliance(match.teams[0], match.teams[1], match.teams[0].alliance, queryUtils.formatMatchScores(match.scores.red))
     blue: Alliance = Alliance(match.teams[2], match.teams[3], match.teams[2].alliance, queryUtils.formatMatchScores(match.scores.blue))
 
-    event: Event = formatEventInfo(match.event)
+    event: Event = queryUtils.formatEventInfo(match.event)
 
     result = BestMatch(event, Match(red, blue))
 
@@ -379,7 +377,7 @@ def upcomingEvents(number) -> QueryResult:
     ev: list[Event] = []
 
     for event in unplayed_events:
-        ev.append(queryUtils.formatEventInfo(event))
+        ev.append(queryUtils.formatEventInfo(event.event))
 
     t = Team(team.name, team.number)
 
@@ -425,7 +423,7 @@ def ongoingEvents(number) -> QueryResult:
     ev: list[Event] = []
 
     for event in ongoing_events:
-        ev.append(queryUtils.formatEventInfo(event))
+        ev.append(queryUtils.formatEventInfo(event.event))
 
     t = Team(team.name, team.number)
 
@@ -484,7 +482,7 @@ def qualifiedSTATES(number) -> QueryResult:
         qualified_event = None
         has_qualified = False
     else:
-        qualified_event = formatTeamEventData(qualified_events[0], team.number)
+        qualified_event = queryUtils.formatTeamEventData(qualified_events[0], team.number)
         has_qualified = True
 
     team = Team(team.name, team.number)
@@ -543,7 +541,7 @@ def qualifiedWORLDS(number) -> QueryResult:
         qualified_event = None
         has_qualified = False
     else:
-        qualified_event = formatTeamEventData(qualified_events[0], team.number)
+        qualified_event = queryUtils.formatTeamEventData(qualified_events[0], team.number)
         has_qualified = True
 
     team = Team(team.name, team.number)

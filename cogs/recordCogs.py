@@ -2,30 +2,32 @@ import discord
 from discord.ext import commands
 from query_stuff import queries
 from misc.templates import *
-from misc.config import setFooter, EMBED_COLOR, categorizedCommand, COMMAND_PREFIX
+from misc.config import setFooter, EMBED_COLOR, commandAttrs, addAppCommand
 
 
 class RecordCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
 
-    @commands.group(invoke_without_command=True)
-    async def records(self, ctx):
-        await ctx.send(f"This is the group of record commands. Type `{COMMAND_PREFIX}help records` for more info.")
+    async def cog_load(self) -> None:
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.worldrecord))
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.bestteam))
 
-    @categorizedCommand(
+    @commandAttrs(
         category="records",
-        aliases=['topteam', 'bt'],
-        description='Queries the best team from ftcscout.org with an optional region modifier to search within a given region',
+        description='Gets the best team within a optional given region.',
         brief="Gets the best team from ftcscout.org",
-        usage=f"{COMMAND_PREFIX}bestteam <region>",
-        parameters={
+        usage=f"/bestteam <region>",
+        param_guide={
             "<region>": "An optional argument for the region to search in. Defaults to All."
-        }
+        },
+        name='bestteam'
     )
-    async def bestteam(self, ctx, region='All'):
+    async def bestteam(self, interaction: discord.Interaction, region: str ='All'):
         data, success = queries.bestTeam(region)
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
             return
         team_info, team_qstats, team_events = data
         auto, tele, endgame, np = team_qstats
@@ -46,23 +48,24 @@ class RecordCog(commands.Cog):
 
         setFooter(embed)
 
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @categorizedCommand(
+    @commandAttrs(
         category='records',
-        aliases=['wr', 'worldrecord', 'bm'],
-        description='Queries the best match from ftcscout.org with an optional region modifier to search within a given region',
+        description='Gets the best match within a optional given region.',
         brief="Gets the best match from ftcscout.org.",
-        usage=f"{COMMAND_PREFIX}bestmatch <region>",
-        parameters={
+        usage=f"/worldrecord <region>",
+        param_guide={
             "<region>": "An optional argument for the region to search in. Defaults to All."
-        }
+        },
+        name='worldrecord'
     )
-    async def bestmatch(self, ctx, region='All'):
+    async def worldrecord(self, interaction: discord.Interaction, region: str ='All'):
+        await interaction.response.defer()
         data, success = queries.bestMatch(region)
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
             return
 
         event, match = data
@@ -75,5 +78,5 @@ class RecordCog(commands.Cog):
 
         setFooter(scores_embed)
 
-        await ctx.send(embed=scores_embed)
+        await interaction.followup.send(embed=scores_embed)
 

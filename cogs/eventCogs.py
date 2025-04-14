@@ -2,38 +2,36 @@ import discord
 from discord.ext import commands
 
 from query_stuff import queries
-
-from misc.templates import eventTemplate
-from misc.config import EMBED_COLOR, COMMAND_PREFIX, checkValidNumber, setFooter, categorizedCommand
 from query_stuff.queries import nameFromNumber
 
 
+from misc.templates import eventTemplate
+from misc.config import EMBED_COLOR, checkValidNumber, setFooter, commandAttrs, addAppCommand
+
+
 class EventCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.group(invoke_without_command=True)
-    async def events(self, ctx):
-        await ctx.send(f"This is the group of event commands. Type `{COMMAND_PREFIX}help events` for more info.")
+    async def cog_load(self) -> None:
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.teamevents))
+        # self.bot.tree.add_command(addAppCommand(self.bot)(self.upcomingevents))
 
-    @categorizedCommand(
+    @commandAttrs(
         category="events",
-        aliases=['ev'],
-        usage=f"{COMMAND_PREFIX}teamevents <number>",
+        usage=f"/teamevents <number>",
         brief="Gets all events a team has had or will have.",
         description="Gets all events a team has had or will have, and their stats for events they've played.",
-        parameters={
+        param_guide={
             '<number>': 'The number of the team to query for.'
-        }
+        },
+        name='teamevents'
     )
-    async def teamevents(self, ctx, number):
-        if not checkValidNumber(number):
-            await ctx.send("Please enter a valid number.")
-            return
-        data, success = queries.teamEvents(number)
+    async def teamevents(self, interaction: discord.Interaction, number: int):
+        data, success = queries.teamEvents(str(number))
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
             return
         info, events = data
         title = f"Team {info.number}, {info.name}"
@@ -46,56 +44,52 @@ class EventCog(commands.Cog):
 
         setFooter(events_embed)
 
-        await ctx.send(embed=events_embed)
+        await interaction.response.send_message(embed=events_embed)
 
-    @categorizedCommand(
+    @commandAttrs(
         category='events',
-        aliases=['calendar'],
         description='Gets any events that a team has not played yet, and shows their location. The command can also be told to create a discord event for each event',
         brief="Gets all the events a team has not played yet.",
-        usage=f"{COMMAND_PREFIX}upcomingevents <number> <create_event>",
-        parameters={
+        usage=f"/upcomingevents <number> <create_event>",
+        param_guide={
             '<number>': 'The number of the team.',
             '<create_event>': 'Enter "Yes" to create events based on the upcoming events of the team.'
-        }
+        },
+        name='upcomingevents'
     )
-    async def upcomingevents(self, ctx, number, create_event):
+    async def upcomingevents(self, interaction: discord.Interaction, number: int):
         raise NotImplementedError() # TODO: IMPLEMENT BASICS THEN CODE EVENT CREATION
 
 
 class QualificationCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.group(invoke_without_command=True)
-    async def qualification(self, ctx):
-        await ctx.send(f"This is the group of qualification commands. Type `{COMMAND_PREFIX}help qualification` for more info")
+    async def cog_load(self) -> None:
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.qualifiedstates))
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.qualifiedworlds))
 
-    @categorizedCommand(
+    @commandAttrs(
         category='qualification',
-        aliases=['states', 'qualstates'],
-        description="Checks if a team has qualified for states. If they have, gets the data and the team's stats for the event they qualified in.",
+        description="If a team has qualified for states, will send the team's stats for the event they qualified in.",
         brief='Checks if a team has qualified for states.',
-        usage=f'{COMMAND_PREFIX}qualifiedforstates <number>',
-        parameters={
+        usage=f'/qualifiedstates <number>',
+        param_guide={
             '<number>': 'The number of the team to query for.'
-        }
+        },
+        name='qualifiedstates'
     )
-    async def qualifiedstates(self, ctx, number):
-        if not checkValidNumber(number):
-            await ctx.send("Please enter a valid number.")
-            return
-
-        data, success = queries.qualifiedSTATES(number)
+    async def qualifiedstates(self, interaction: discord.Interaction, number: int):
+        data, success = queries.qualifiedSTATES(str(number))
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
             return
 
         if not data.hasQualified:
             desc = f"Team {data.team.number} {data.team.name} has not qualified for states."
             qual_embed = discord.Embed(title=desc, color=EMBED_COLOR)
-            await ctx.send(embed=qual_embed)
+            await interaction.response.send_message(embed=qual_embed)
             return
 
         title = f"Team {data.team.number} {nameFromNumber(data.team.number)} has qualified for states."
@@ -106,33 +100,29 @@ class QualificationCog(commands.Cog):
         qual_embed.add_field(name=name, value=val, inline=False)
         setFooter(qual_embed)
 
-        await ctx.send(embed=qual_embed)
+        await interaction.response.send_message(embed=qual_embed)
 
-    @categorizedCommand(
+    @commandAttrs(
         category='qualification',
-        aliases=['worlds', 'qualworlds'],
-        description="Checks if a team has qualified for worlds. If they have, gets the data and the team's stats for the event they qualified in.",
+        description="If a team has qualified for worlds, will send the team's stats for the event they qualified in.",
         brief='Checks if a team has qualified for worlds.',
-        usage=f'{COMMAND_PREFIX}qualifiedforworlds <number>',
-        parameters={
+        usage=f'/qualifiedworlds <number>',
+        param_guide={
             '<number>': 'The number of the team to query for.'
-        }
+        },
+        name='qualifiedworlds'
     )
-    async def qualifiedforworlds(self, ctx, number):
-        if not checkValidNumber(number):
-            await ctx.send("Please enter a valid number.")
-            return
-
-        data, success = queries.qualifiedWORLDS(number)
+    async def qualifiedworlds(self, interaction: discord.Interaction, number: int):
+        data, success = queries.qualifiedWORLDS(str(number))
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
             return
 
         if not data.hasQualified:
             desc = f"Team {data.team.number} {data.team.name} has not qualified for worlds."
             qual_embed = discord.Embed(title=desc, color=EMBED_COLOR)
-            await ctx.send(embed=qual_embed)
+            await interaction.response.send_message(embed=qual_embed)
             return
 
         title = f"Team {data.team.number} {nameFromNumber(data.team.number)} has qualified for worlds."
@@ -143,4 +133,4 @@ class QualificationCog(commands.Cog):
         qual_embed.add_field(name=name, value=val, inline=False)
         setFooter(qual_embed)
 
-        await ctx.send(embed=qual_embed)
+        await interaction.response.send_message(embed=qual_embed)

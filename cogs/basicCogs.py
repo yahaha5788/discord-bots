@@ -1,66 +1,73 @@
-from types import NoneType
-
 from discord.ext import commands
+from discord import Interaction
 import discord
 from random import randint, choice
-from misc.config import EMBED_COLOR, CHOICES, COMMAND_PREFIX, categorizedCommand
+from misc.config import EMBED_COLOR, CHOICES, COMMAND_PREFIX, commandAttrs, addAppCommand, checkValidNumber
+
 
 class FunCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.group(invoke_without_command=True)
-    async def fun(self, ctx):
-        await ctx.send(f"This the group of fun commands. Type `{COMMAND_PREFIX}help fun` for more info")
+    async def cog_load(self) -> None:
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.dice))
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.flip))
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.eightball))
+        # self.bot.tree.add_command(addAppCommand(self.bot)(self.trivia))
 
-    @categorizedCommand(
-        category='fun',
-        aliases=['roll'],
+    @commandAttrs(
+        name='dice',
         description='Rolls a die with a given number of sides',
+        usage=f"/dice <sides>",
         brief="Rolls a die with a given number of sides",
-        usage=f"{COMMAND_PREFIX}dice <sides>",
-        parameters={
+        category='fun',
+        param_guide={
             '<sides>': "The number of sides on the die."
         }
     )
-    async def dice(self, ctx, sides=6):
-        roll = randint(0, sides)
+    async def dice(self, interaction: Interaction, sides: int = 6):
+        if not checkValidNumber(sides):
+            await interaction.response.send_message("")
+        roll = randint(1, int(sides))
         dice_embed = discord.Embed(title=":game_die:", description=f"You rolled a **{roll}** on a **{sides}** sided die.", color=EMBED_COLOR)
-        await ctx.send(embed=dice_embed)
+        await interaction.response.send_message(embed=dice_embed)
 
-    @categorizedCommand(
+
+    @commandAttrs(
+        name='flip',
         category='fun',
-        aliases=['coin'],
         description='Flips a coin.',
         brief="Flips a coin.",
-        usage=f"{COMMAND_PREFIX}flip",
+        usage=f"/flip",
     )
-    async def flip(self, ctx):
+    async def flip(self, interaction: Interaction):
         result = 'heads' if randint(0, 1) == 1 else "tails"
         coin_embed = discord.Embed(title="Flipped a coin!", description=f"The :coin: landed on {result}.", color=EMBED_COLOR)
-        await ctx.send(embed=coin_embed)
+        await interaction.response.send_message(embed=coin_embed)
 
-    @categorizedCommand(
+    @commandAttrs(
+        name='eightball',
         category='fun',
-        aliases=['eight'],
         description='Rolls an eightball.',
         brief='Rolls an eightball.',
-        usage=f"{COMMAND_PREFIX}eightball"
+        usage=f"/eightball"
     )
-    async def eightball(self, ctx):
+    async def eightball(self, interaction: Interaction):
         result = choice(CHOICES)
         eightball_embed = discord.Embed(title='The :8ball: says:', description=result, color=EMBED_COLOR)
-        await ctx.send(embed=eightball_embed)
+        await interaction.response.send_message(embed=eightball_embed)
 
-    @categorizedCommand(
+    @commandAttrs(
+        name='trivia',
         category='fun',
-        aliases=['questions', 'quiz'],
         description='Play trivia about FIRST.',
         brief="Play trivia about FIRST.",
-        usage=f"{COMMAND_PREFIX}trivia <number_of_questions>",
-        parameters={
+        usage=f"/trivia <number_of_questions>",
+        param_guide={
             '<number_of_questions>': 'The number of questions the bot will ask'
         }
     )
-    async def trivia(ctx, number_of_questions=1):
+    async def trivia(self, interaction: Interaction, number_of_questions: int = 1):
+        # if number_of_questions < 1 or number_of_questions > 10:
+        #     await interaction.response.send_message("Please enter a number between 1 and 10.")
         raise NotImplementedError() # TODO: IMPLEMENT

@@ -5,14 +5,19 @@ from discord.ext import commands, tasks
 from misc.templates import unplayedEventTemplate, UpcomingEvents, OngoingEvents, Event
 from query_stuff import queries
 
-from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, checkValidNumber, categorizedCommand
+from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, checkValidNumber, commandAttrs, addAppCommand
 
 
 class MonitorCog(commands.Cog):
-    def __init__(self, bot):
-        self.bot: discord.ext.commands.Bot = bot
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
         self.FOLLOWED_TEAMS_ONGOING_EVENTS: dict[str, OngoingEventChecker] = {}
         self.FOLLOWED_TEAMS_UPCOMING_EVENTS: dict[str, UpcomingEventChecker] = {}
+
+    async def cog_load(self) -> None:
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.designatechannel))
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.follow))
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.unfollow))
 
     async def startNotificationLoop(self):
         self.setEvents()
@@ -28,39 +33,31 @@ class MonitorCog(commands.Cog):
                     data, success = queries.upcomingEvents(number)
                     self.FOLLOWED_TEAMS_UPCOMING_EVENTS[number] = UpcomingEventChecker(data, data)
 
-    @commands.group(invoke_without_command=True)
-    async def monitor(self, ctx):
-        await ctx.send(f"This is the group of monitor commands. Type `{COMMAND_PREFIX}help monitor` for more info")
-
-    @categorizedCommand(
+    @commandAttrs(
         category='monitor',
-        aliases=['support', 'track', 'follow'],
-        description='Follows a team. If a channel if designated, the bot will send notifications if the team if currently participating in an event, or if they have a new upcoming event.',
+        description="Follows a team. Harold will send notifications every hour if the team's events have changed",
         brief="Follows a team",
-        usage=f"{COMMAND_PREFIX}favorite <number>",
-        parameters={
+        usage=f"/follow <number>",
+        param_guide={
             '<number>': 'The number of the team to follow.'
-        }
+        },
+        name='follow'
     )
-    async def favorite(self, ctx, number):
-        if not checkValidNumber(number):
-            await ctx.send("Please enter a valid number.")
-            return
-
-        guild_id = str(ctx.guild.id)
+    async def follow(self, interaction: discord.Interaction, number: int):
+        guild_id = str(interaction.guild_id)
 
         with open('../bots/following.json', 'r+') as following, open('../bots/channel_des.json', 'r') as channel_des:
             followed_teams: dict[str, list[str]] = json.load(following)
             channels: dict[str, int] = json.load(channel_des)
 
             if guild_id not in channels.keys():
-                await ctx.send(f"You have not designated a channel to send notifications in. Run {COMMAND_PREFIX}designatechannel in a channel to set that channel as the notification channel")
+                await interaction.response.send_message(f"You have not designated a channel to send notifications in. Run {COMMAND_PREFIX}designatechannel in a channel to set that channel as the notification channel")
 
             if guild_id not in followed_teams.keys():
                 followed_teams[guild_id] = []
 
             if number in followed_teams[guild_id]:
-                await ctx.send(f"You are already following Team {number}, {queries.nameFromNumber(number)}")
+                await interaction.response.send_message(f"You are already following Team {number}, {queries.nameFromNumber(number)}")
                 return
 
             followed_teams[guild_id].append(number)
@@ -68,34 +65,30 @@ class MonitorCog(commands.Cog):
             json.dump(followed_teams, following, indent=4)
             following.truncate()
 
-        await ctx.send(f"You are now following Team {number}, {queries.nameFromNumber(number)}")
+        await interaction.response.send_message(f"You are now following Team {number}, {queries.nameFromNumber(number)}")
 
-    @categorizedCommand(
+    @commandAttrs(
         category='monitor',
-        aliases=['unfollow'],
-        description='Unfollows a team. If the guild was previously receiving notifications about this team, they will no longer.',
+        description='Unfollows a team. The guild will stop receiving notifications about the team..',
         brief="Unfollows a team.",
-        usage=f"{COMMAND_PREFIX}unfavorite <number>",
-        parameters={
+        usage=f"/unfollow <number>",
+        param_guide={
             '<number>': 'The number of the team to query for.'
-        }
+        },
+        name='unfollow'
     )
-    async def unfavorite(self, ctx, number):
-        if not checkValidNumber(number):
-            await ctx.send("Please enter a valid number.")
-            return
-
-        guild_id = str(ctx.guild.id)
+    async def unfollow(self, interaction: discord.Interaction, number: int):
+        guild_id = str(interaction.guild_id)
 
         with open('../bots/following.json', 'r+') as following:
             followed_teams: dict[str, list[str]] = json.load(following)
 
             if guild_id not in followed_teams.keys():
-                await ctx.send('You are not following any teams')
+                await interaction.response.send_message('You are not following any teams')
                 return
 
             if number not in followed_teams[guild_id]:
-                await ctx.send(f"You are not following {number}.")
+                await interaction.response.send_message(f"You are not following {number}.")
                 return
 
             followed_teams[guild_id].remove(number)
@@ -103,17 +96,18 @@ class MonitorCog(commands.Cog):
             json.dump(followed_teams, following, indent=4)
             following.truncate()
 
-        await ctx.send(f"You are no longer following Team {number}, {queries.nameFromNumber(number)}")
+        await interaction.response.send_message(f"You are no longer following Team {number}, {queries.nameFromNumber(number)}")
 
-    @categorizedCommand(
+    @commandAttrs(
         category='monitor',
-        description='Designates the channel for notifications. This is where hourly notifications will be sent about followed teams.',
+        description='Designates the channel for hourly notifications to be sent about followed teams.',
         brief="Sets the channel where notifications will be sent.",
-        usage=f"{COMMAND_PREFIX}designatechannel"
+        usage=f"/designatechannel",
+        name='designatechannel'
     )
-    async def designatechannel(self, ctx):
-        guild_id = str(ctx.guild.id)
-        channel_id = ctx.channel.id
+    async def designatechannel(self, interaction: discord.Interaction):
+        guild_id = str(interaction.guild_id)
+        channel_id = interaction.channel_id
 
         with open('../bots/channel_des.json', 'r+') as channel_des:
             channels: dict[str, int] = json.load(channel_des)
@@ -123,7 +117,7 @@ class MonitorCog(commands.Cog):
             json.dump(channels, channel_des, indent=4)
             channel_des.truncate()
 
-        await ctx.send("Notifications for teams you are following will show up here.")
+        await interaction.response.send_message("Notifications for teams you are following will show up here.")
 
     @tasks.loop(hours=1)
     async def sendNotifications(self):

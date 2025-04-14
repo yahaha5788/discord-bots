@@ -217,9 +217,9 @@ def addSponsors(sponsors: list[str], string: str) -> str:
     return string
 
 #------------------------------ HELP ----------------------------#
-def formatUsage(usage: str, aliases: list[str], parameters: dict[str, str]) -> tuple[str, str]:
+def formatUsage(usage: str, parameters: dict[str, str]) -> tuple[str, str]:
     name = "Usage"
-    value = f"`{usage}`\nOther names: {[f'`{alias}`' for alias in aliases]}"
+    value = f"`{usage}`"
     if parameters:
         for parameter, use in parameters.items():
             value = value + f"\n`{parameter}`: {use}"

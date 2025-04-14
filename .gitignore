@@ -1,3 +1,5 @@
 /bots/keys.env
 /bots/channel_des.json
 /bots/following.json
+/bots/guilds.json
+/bots/harold.log

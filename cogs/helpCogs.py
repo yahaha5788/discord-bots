@@ -2,15 +2,19 @@ import discord
 from discord.ext import commands
 from discord import ButtonStyle
 
-from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherCommands, CategorizedCommand
+from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherAppCommands, addAppCommand, commandAttrs, CategorizedAppCommand
 from misc.templates import formatUsage
 
 
-class HelpCMD(commands.HelpCommand):
-    def __init__(self):
-        super().__init__()
+class HelpCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.commands = [CategorizedAppCommand(command) for command in self.bot.tree.get_commands()]
 
-    async def send_bot_help(self, mapping):
+    async def cog_load(self) -> None:
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.help))
+
+    async def allHelp(self, interaction: discord.Interaction):
         current_page = discord.Embed(
             title="Help",
             description="List of available commands:",
@@ -19,9 +23,8 @@ class HelpCMD(commands.HelpCommand):
 
         pages = []
         current_length = 0
-        commands_to_show = [command for command in self.context.bot.commands if isinstance(command, CategorizedCommand)]
 
-        for command in commands_to_show:
+        for command in self.commands:
             cmd_name = f"`{command.name}: {command.category}`"
             cmd_desc = command.brief or "No description available"
             field_text = f"{cmd_desc}\n"
@@ -38,19 +41,19 @@ class HelpCMD(commands.HelpCommand):
 
         current_index = 0
 
-        async def previous_page(interaction: discord.Interaction):
+        async def previous_page(interact: discord.Interaction):
             nonlocal current_index
             if current_index > 0:
                 current_index -= 1
-            await interaction.message.edit(embed=pages[current_index])
-            await interaction.response.defer()
+            await interact.message.edit(embed=pages[current_index])
+            await interact.response.defer()
 
-        async def next_page(interaction: discord.Interaction):
+        async def next_page(interact: discord.Interaction):
             nonlocal current_index
             if current_index < len(pages) - 1:
                 current_index += 1
-            await interaction.message.edit(embed=pages[current_index])
-            await interaction.response.defer()
+            await interact.message.edit(embed=pages[current_index])
+            await interact.response.defer()
 
         backButton = discord.ui.Button(label="⬅️", style=ButtonStyle.grey)
         nextButton = discord.ui.Button(label="➡️", style=ButtonStyle.grey)
@@ -61,9 +64,9 @@ class HelpCMD(commands.HelpCommand):
         help_view.add_item(backButton)
         help_view.add_item(nextButton)
 
-        await self.context.send(embed=pages[current_index], view=help_view)
+        await interaction.response.send_message(embed=pages[current_index], view=help_view)
 
-    async def send_command_help(self, command: CategorizedCommand):
+    async def commandHelp(self, interaction: discord.Interaction, command: CategorizedAppCommand):
         title = f"Help: {command.name}"
         help_embed = discord.Embed(title=title, color=EMBED_COLOR)
 
@@ -71,16 +74,13 @@ class HelpCMD(commands.HelpCommand):
 
         help_embed.description = command.description
 
-        name, value = formatUsage(command.usage, command.aliases, command.parameters)
+        name, value = formatUsage(command.usage, command.param_guide)
 
         help_embed.add_field(name=name, value=value, inline=False)
 
-        await self.context.send(embed=help_embed)
+        await interaction.response.send_message(embed=help_embed)
 
-    async def send_group_help(self, category):
-
-        category = str(category)
-
+    async def categoryHelp(self, interaction: discord.Interaction, commands_in_category, category):
         current_page = discord.Embed(
             title=f"Help: {category}",
             description=f"Commands in `{category}`:",
@@ -90,9 +90,7 @@ class HelpCMD(commands.HelpCommand):
         pages: list[discord.Embed] = []
         current_length = 0
 
-        commands_to_show = gatherCommands([command for command in self.context.bot.commands if isinstance(command, CategorizedCommand)], category)
-
-        for command in commands_to_show:
+        for command in commands_in_category:
             cmd_name = f"`{command.name}`"
             cmd_desc = command.brief or "No description available."
             cmd_usage = command.usage or "Usage not specified."
@@ -110,19 +108,19 @@ class HelpCMD(commands.HelpCommand):
 
         current_index = 0
 
-        async def previous_page(interaction: discord.Interaction):
+        async def previous_page(interact: discord.Interaction):
             nonlocal current_index
             if current_index > 0:
                 current_index -= 1
-            await interaction.message.edit(embed=pages[current_index])
-            await interaction.response.defer()
+            await interact.message.edit(embed=pages[current_index])
+            await interact.response.defer()
 
-        async def next_page(interaction: discord.Interaction):
+        async def next_page(interact: discord.Interaction):
             nonlocal current_index
             if current_index < len(pages) - 1:
                 current_index += 1
-            await interaction.message.edit(embed=pages[current_index])
-            await interaction.response.defer()
+            await interact.message.edit(embed=pages[current_index])
+            await interact.response.defer()
 
         backButton = discord.ui.Button(label="⬅️", style=ButtonStyle.grey)
         nextButton = discord.ui.Button(label="➡️", style=ButtonStyle.grey)
@@ -133,4 +131,27 @@ class HelpCMD(commands.HelpCommand):
         help_view.add_item(backButton)
         help_view.add_item(nextButton)
 
-        await self.context.send(embed=pages[current_index], view=help_view)
+        await interaction.response.send_message(embed=pages[current_index], view=help_view)
+
+    @commandAttrs(
+        name='help',
+        description='Help command. Shows this command.',
+        brief="Help command. Shows this command.",
+        usage='/help <keyword>',
+        param_guide={
+            "<keyword>": "An option key word to filter by command or category."
+        },
+        category='Help'
+    )
+    async def help(self, interaction: discord.Interaction, keyword: str = None):
+        if keyword:
+            commands_to_show, help_type = gatherAppCommands(self.commands, keyword)
+            if help_type == 'category':
+                await self.categoryHelp(interaction, commands_to_show, keyword)
+            elif help_type == 'command':
+                await self.commandHelp(interaction, commands_to_show[0])
+            else:
+                await interaction.response.send_message("That is not a valid command or category name.")
+        else:
+            await self.allHelp(interaction)
+

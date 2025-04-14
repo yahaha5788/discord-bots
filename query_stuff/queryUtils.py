@@ -56,7 +56,6 @@ def formatTeamEventData(i: SimpleNamespace, number: int) -> Event:
     return Event(name, level, time, started, loc, team_event_stats)
 
 def formatEventInfo(event: SimpleNamespace) -> Event:
-    event = event.event
     name: str = event.name
     level: str = event.type
     time: str = event.start

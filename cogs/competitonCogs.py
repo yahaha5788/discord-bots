@@ -5,17 +5,21 @@ from discord import VoiceChannel
 
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, COMMAND_PREFIX, categorizedCommand, FTC_LOGO
+from misc.config import EMBED_COLOR, COMMAND_PREFIX, categorizedCommand, FTC_LOGO, commandAttrs, addAppCommand
 from misc.templates import EventDates, MajorQualifyingEvent
 
 
 class CompetitionCog(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         with open(FTC_LOGO, 'rb') as logo:
             self.event_logo = logo.read()
 
-    async def createEvent(self, guild: discord.Guild, name: str, day: EventDates, vc: VoiceChannel) -> discord.ScheduledEvent:
+    # async def cog_load(self) -> None:
+    #     self.bot.tree.add_command(addAppCommand(self.bot)(self.setworlds))
+    #     self.bot.tree.add_command(addAppCommand(self.bot)(self.setstates))
+
+    async def createEvent(self, guild: discord.Guild, name: str, day: EventDates, vc: VoiceChannel, links: str) -> discord.ScheduledEvent:
         start_time = datetime(int(day.year), int(day.month), int(day.start_day), 12, 0, 0, tzinfo=timezone.utc)
         end_time = datetime(int(day.year), int(day.month), int(day.end_day), 21, 0, 0)
 
@@ -25,50 +29,50 @@ class CompetitionCog(commands.Cog):
             start_time=start_time,
             end_time=end_time,
             image=self.event_logo,
-            channel=vc
+            channel=vc,
+            description=links
         )
         return event
 
-    @categorizedCommand(
+    @commandAttrs(
         category='Competition',
-        parameters={
+        param_guide={
             "<vc>": 'The voice channel location of the server event. Type "#!" to mention the voice channel just as you would use "#" to mention a normal channel'
         },
-        aliases=["WORLDS"],
         brief="",
-        desription="",
-        usage=f"{COMMAND_PREFIX}setworlds <vc>"
+        description="",
+        usage=f"/setworlds <vc>",
+        name='setworlds'
     )
-    async def setworlds(self, ctx, vc: discord.VoiceChannel):
+    async def setworlds(self, interaction: discord.Interaction, vc: discord.VoiceChannel):
         data, success = queries.worlds()
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
-            await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed)
             return
 
         finals, edison, jemison, franklin, ochoa = data
 
         #FINALS
         finals: MajorQualifyingEvent
-
-        title = finals.name
-        date_range = f"{finals.dates.month} / {finals.dates.start_day} / {finals.dates.year} to {finals.dates.month} / {finals.dates.end_day} / {finals.dates.year}"
-
+        title = f"{finals.name}- {finals.dates.month} / {finals.dates.start_day} / {finals.dates.year} to {finals.dates.month} / {finals.dates.end_day} / {finals.dates.year}"
+        
 
 
-    @categorizedCommand(
+
+    @commandAttrs(
         category='Competition',
-        parameters={
+        param_guide={
             "<name>": "The name of the states event.",
             "<vc>": 'The voice channel location of the server event. Type "#!" to mention the voice channel just as you would use "#" to mention a normal channel'
         },
-        aliases=["STATES"],
         brief="NOT IMPLEMENTED",
-        desription="NOT IMPLEMENTED",
-        usage=f"{COMMAND_PREFIX}setstates <name> <vc>"
+        description="NOT IMPLEMENTED",
+        usage=f"/setstates <name> <vc>",
+        name='setstates'
     )
-    async def setstates(self, ctx, name, vc: discord.VoiceChannel):
-        raise NotImplementedError("no")
+    async def setstates(self, interaction: discord.Interaction, name: str, vc: discord.VoiceChannel):
+        raise NotImplementedError("no") # TODO: IMPLEMENT
         # data, success = queries.worlds(name)
         # if not success:
         #     embed = discord.Embed(description=data, color=EMBED_COLOR)

@@ -1,9 +1,46 @@
+import json
 from http.client import responses
 
 import discord
-from typing import Final, Optional
+from typing import Final, Optional, Union
 
+from discord import app_commands
 from discord.ext import commands
+from unicodedata import category
+
+GOLD: Final[str] = 'BBA53D'
+EMBED_COLOR: Final[int] = int(GOLD, 16)
+
+CHOICES: Final[list] = [
+    'Yes.',
+    'No.',
+    'Maybe.',
+    'Unlikely.',
+    'Likely.',
+    'You forgot to reset encoders.',
+    'Go code autonomous.',
+    'Tell Ty he can solo drive for the next comp.'
+]
+
+CHARACTER_LIMIT: Final[int] = 500
+
+COMMAND_PREFIX: Final[str] = '/' #i don't want to go through my entire code and change this to just '/'
+
+PLACEHOLDER_PREFIX: Final[str] = 'h$'
+
+ACTIVITY: Final[discord.Activity] = discord.Activity(type=discord.ActivityType.listening, name='to lifts skipping')
+
+STARTING: Final[discord.CustomActivity] = discord.CustomActivity(name="STARTING")
+
+FTC_LOGO: Final[str] =  "../bots/ftc.png"
+
+with open('../bots/guilds.json', 'r') as guilds_json:
+    guilds: dict[str, int] = json.load(guilds_json)
+    command_guilds: list[discord.Object] = []
+    for guild in guilds.values():
+        command_guilds.append(discord.Object(id=guild))
+
+    VALID_GUILDS: Final[list[discord.Object]] = command_guilds
 
 
 def getCodeDesc(code: int) -> str:
@@ -35,7 +72,7 @@ def checkValidNumber(number) -> bool:
     try:
         int(number)
         return True
-    except ValueError:
+    except ValueError: #when you get a number as an input from discord, it is always a string, so isinstance won't work
         return False
 
 class CategorizedCommand(commands.Command):
@@ -49,6 +86,52 @@ def categorizedCommand(category: str, parameters: Optional[dict[str, str]] = Non
         return CategorizedCommand(command_function, category=category, parameters=parameters,**kwargs)
     return decorator
 
+def commandAttrs(name: str, description: str, usage: str, brief: str, category: str, param_guide: Optional[dict[str, str]] = None):
+    def decorator(cmd):
+        cmd.name = name
+        cmd.description = description
+        cmd.usage = usage
+        cmd.brief = brief
+        cmd.category = category
+        cmd.param_guide = param_guide
+
+        return cmd
+    return decorator
+
+def gatherCommandAttrs(cmd) -> tuple[str, str, str, str, str, dict[str, str] | None]:
+    name = getattr(cmd, "name")
+    description = getattr(cmd, "description")
+    category = getattr(cmd, "category")
+    usage = getattr(cmd, "usage")
+    brief = getattr(cmd, "brief")
+    param_guide = getattr(cmd, "param_guide", None)
+
+    return name, description, category, usage, brief, param_guide
+
+def addAppCommand(
+    bot: commands.Bot,
+):
+    def decorator(cmd):
+        name, description, category, usage, brief, param_guide = gatherCommandAttrs(cmd)
+
+        command = app_commands.command(name=name, description=description)(cmd)
+
+        command.usage = usage
+        command.brief = brief
+        command.category = category
+        command.param_guide = param_guide
+
+        if VALID_GUILDS:
+            for guild in VALID_GUILDS:
+                bot.tree.add_command(command, guild=guild)
+        else:
+            bot.tree.add_command(command)
+
+        return command
+    return decorator
+
+
+
 def gatherCommands(commands_to_sort: list[CategorizedCommand], category: str) -> list[CategorizedCommand]:
     result = []
     for command in commands_to_sort:
@@ -57,27 +140,20 @@ def gatherCommands(commands_to_sort: list[CategorizedCommand], category: str) ->
 
     return result
 
+class CategorizedAppCommand:
+    def __init__(self, command):
+        self.command = command
+        self.name, self.description, self.category, self.usage, self.brief, self.param_guide = gatherCommandAttrs(command)
 
-GOLD: Final[str] = 'BBA53D'
-EMBED_COLOR: Final[int] = int(GOLD, 16)
+def gatherAppCommands(commands_to_sort: list[CategorizedAppCommand], keyword: str) -> tuple[list[CategorizedAppCommand], str]:
+    result = []
+    for command in commands_to_sort:
+        if command.category == keyword:
+            result.append(command)
 
-CHOICES: Final[list] = [
-    'Yes.',
-    'No.',
-    'Maybe.',
-    'Unlikely.',
-    'Likely.',
-    'You forgot to reset encoders.',
-    'Go code autonomous.',
-    'Tell Ty he can solo drive for the next comp.'
-]
-
-CHARACTER_LIMIT: Final[int] = 500
-
-COMMAND_PREFIX: Final[str] = 'h$'
-
-ACTIVITY: Final[discord.Game] = discord.Game(name=f"{COMMAND_PREFIX}help")
-
-STARTING: Final[discord.CustomActivity] = discord.CustomActivity(name="STARTING")
-
-FTC_LOGO: Final[str] =  "../bots/ftc.png"
+        if command.name == keyword:
+            result.append(command)
+            return result, 'command'
+    if not result:
+        return result, 'all'
+    return result, 'category'
