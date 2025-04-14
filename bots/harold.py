@@ -1,43 +1,35 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 
-from misc.config import COMMAND_PREFIX, ACTIVITY, STARTING
-from cogs import basicCogs, statsCogs, helpCogs, monitorCogs, eventCogs, recordCogs, competitonCogs, updatesLoop
+from cogs import basicCogs, competitonCogs, eventCogs, monitorCogs, recordCogs, statsCogs, helpCogs
+
+from misc.config import ACTIVITY, VALID_GUILDS, PLACEHOLDER_PREFIX, STARTING
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents, activity=STARTING)
+bot = commands.Bot(command_prefix=PLACEHOLDER_PREFIX, intents=intents, activity=ACTIVITY)
 
 @bot.event
 async def on_ready():
-    fun_cog = basicCogs.FunCog(bot)
-    await bot.add_cog(fun_cog)
+    await bot.add_cog(basicCogs.FunCog(bot))
 
-    event_cog = eventCogs.EventCog(bot)
-    quals_cog = eventCogs.QualificationCog(bot)
-    await bot.add_cog(event_cog)
-    await bot.add_cog(quals_cog)
+    # await bot.add_cog(competitonCogs.CompetitionCog(bot)) TODO: FINISH THIS
 
-    record_cog = recordCogs.RecordCog(bot)
-    await bot.add_cog(record_cog)
+    await bot.add_cog(eventCogs.EventCog(bot))
+    await bot.add_cog(eventCogs.QualificationCog(bot))
 
-    stats_cog = statsCogs.StatsCog(bot)
-    info_cog = statsCogs.InfoCog(bot)
-    await bot.add_cog(stats_cog)
-    await bot.add_cog(info_cog)
+    await bot.add_cog(monitorCogs.MonitorCog(bot))
 
-    monitor_cog = monitorCogs.MonitorCog(bot)
-    await bot.add_cog(monitor_cog)
+    await bot.add_cog(recordCogs.RecordCog(bot))
 
-    comp_cog = competitonCogs.CompetitionCog(bot)
-    await bot.add_cog(comp_cog)
+    await bot.add_cog(statsCogs.StatsCog(bot))
+    await bot.add_cog(statsCogs.InfoCog(bot))
 
-    updates_loop = updatesLoop.Updates(bot)
-    await bot.add_cog(updates_loop)
+    await bot.add_cog(helpCogs.HelpCog(bot))
 
-    bot.help_command = helpCogs.HelpCMD()
-    updates_loop.retrieveCogs()
+    for guild in VALID_GUILDS:
+        await bot.tree.sync(guild=guild)
 
-    await bot.change_presence(activity=ACTIVITY)
+    print('Bot is ready')
