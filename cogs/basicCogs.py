@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord import Interaction
 import discord
 from random import randint, choice
-from misc.config import EMBED_COLOR, CHOICES, COMMAND_PREFIX, commandAttrs, addAppCommand, checkValidNumber
+from misc.config import EMBED_COLOR, CHOICES, COMMAND_PREFIX, commandAttrs, addAppCommand
 
 
 class FunCog(commands.Cog):
@@ -26,8 +26,6 @@ class FunCog(commands.Cog):
         }
     )
     async def dice(self, interaction: Interaction, sides: int = 6):
-        if not checkValidNumber(sides):
-            await interaction.response.send_message("")
         roll = randint(1, int(sides))
         dice_embed = discord.Embed(title=":game_die:", description=f"You rolled a **{roll}** on a **{sides}** sided die.", color=EMBED_COLOR)
         await interaction.response.send_message(embed=dice_embed)

@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, setFooter, checkValidNumber, commandAttrs, addAppCommand
+from misc.config import EMBED_COLOR, setFooter, commandAttrs, addAppCommand
 from misc.templates import qStatsTemplate, addSponsors
 
 

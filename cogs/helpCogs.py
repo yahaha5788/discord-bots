@@ -13,6 +13,7 @@ class HelpCog(commands.Cog):
 
     async def cog_load(self) -> None:
         self.bot.tree.add_command(addAppCommand(self.bot)(self.help))
+        self.bot.tree.add_command(addAppCommand(self.bot)(self.intro))
 
     async def allHelp(self, interaction: discord.Interaction):
         current_page = discord.Embed(
@@ -154,4 +155,17 @@ class HelpCog(commands.Cog):
                 await interaction.response.send_message("That is not a valid command or category name.")
         else:
             await self.allHelp(interaction)
+
+    @commandAttrs(
+        name='intro',
+        description='Intro command for new users.',
+        brief='Introduction command.',
+        usage='/intro',
+        category='help'
+    )
+    async def intro(self, interaction: discord.Interaction):
+        title = f"Welcome, {interaction.user.display_name}!"
+        description = f"Welcome, {interaction.user.display_name}, to team 14988, Royal ⍴-botics!\nTo get started, type `/quickstats 14988`! That's our team's stats for the season. You can type /help for more commands.\n\nWe're excited to have you on the team, and we hope you have a great time!"
+        intro_embed = discord.Embed(title=title, description=description, color=EMBED_COLOR)
+        await interaction.response.send_message(embed=intro_embed, ephemeral=True)
 

@@ -6,7 +6,7 @@ from query_stuff.queries import nameFromNumber
 
 
 from misc.templates import eventTemplate
-from misc.config import EMBED_COLOR, checkValidNumber, setFooter, commandAttrs, addAppCommand
+from misc.config import EMBED_COLOR, setFooter, commandAttrs, addAppCommand
 
 
 class EventCog(commands.Cog):

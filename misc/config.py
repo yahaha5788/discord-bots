@@ -1,13 +1,12 @@
 import json
 from http.client import responses
+from typing import Final, Optional
 
 import discord
-from typing import Final, Optional, Union
-
 from discord import app_commands
 from discord.ext import commands
-from unicodedata import category
 
+# ------------------ FINALS ----------------------#
 GOLD: Final[str] = 'BBA53D'
 EMBED_COLOR: Final[int] = int(GOLD, 16)
 
@@ -42,6 +41,7 @@ with open('../bots/guilds.json', 'r') as guilds_json:
 
     VALID_GUILDS: Final[list[discord.Object]] = command_guilds
 
+# ---------------- UTILS -------------------#
 
 def getCodeDesc(code: int) -> str:
     desc: str = responses[code]
@@ -68,24 +68,8 @@ def appendSuffix(num: int) -> str:
 def setFooter(embed: discord.Embed) -> None:
     embed.add_field(name="Links", value="[FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
 
-def checkValidNumber(number) -> bool:
-    try:
-        int(number)
-        return True
-    except ValueError: #when you get a number as an input from discord, it is always a string, so isinstance won't work
-        return False
 
-class CategorizedCommand(commands.Command):
-    def __init__(self, func, category: str, parameters: Optional[dict[str, str]] = None, **kwargs):
-        super().__init__(func, **kwargs)
-        self.category = category
-        self.parameters = parameters
-
-def categorizedCommand(category: str, parameters: Optional[dict[str, str]] = None, **kwargs): #i think making my own decorator is a sign i'm going down the rabbit hole
-    def decorator(command_function):
-        return CategorizedCommand(command_function, category=category, parameters=parameters,**kwargs)
-    return decorator
-
+# --------------- CATEGORIZED COMMANDS --------------------------#
 def commandAttrs(name: str, description: str, usage: str, brief: str, category: str, param_guide: Optional[dict[str, str]] = None):
     def decorator(cmd):
         cmd.name = name
@@ -130,18 +114,8 @@ def addAppCommand(
         return command
     return decorator
 
-
-
-def gatherCommands(commands_to_sort: list[CategorizedCommand], category: str) -> list[CategorizedCommand]:
-    result = []
-    for command in commands_to_sort:
-        if command.category == category:
-            result.append(command)
-
-    return result
-
-class CategorizedAppCommand:
-    def __init__(self, command):
+class CategorizedAppCommand: # basically just wraps every command when the help function is run
+    def __init__(self, command): # TODO: OPTIMIZE- WRAP ALL COMMANDS ON START AND USE INSTEAD OF WRAPPING EVERY TIME /HELP IS RUN
         self.command = command
         self.name, self.description, self.category, self.usage, self.brief, self.param_guide = gatherCommandAttrs(command)
 

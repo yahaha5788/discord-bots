@@ -5,7 +5,7 @@ from discord import VoiceChannel
 
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, COMMAND_PREFIX, categorizedCommand, FTC_LOGO, commandAttrs, addAppCommand
+from misc.config import EMBED_COLOR, COMMAND_PREFIX, FTC_LOGO, commandAttrs, addAppCommand
 from misc.templates import EventDates, MajorQualifyingEvent
 
 

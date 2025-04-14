@@ -5,7 +5,7 @@ from discord.ext import commands, tasks
 from misc.templates import unplayedEventTemplate, UpcomingEvents, OngoingEvents, Event
 from query_stuff import queries
 
-from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, checkValidNumber, commandAttrs, addAppCommand
+from misc.config import COMMAND_PREFIX, EMBED_COLOR, setFooter, commandAttrs, addAppCommand
 
 
 class MonitorCog(commands.Cog):
