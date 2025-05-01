@@ -1,87 +1,15 @@
-import discord
 from discord.ext import commands
 import discord.utils
 from typing import Any
-import re
+from misc.polaroidutils import *
 
-command_prefix = "polaroid "
+command_prefix = "p!"
 activity = discord.Game(name="with colors")
 
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 bot = commands.Bot(command_prefix=command_prefix, intents=intents, activity=activity)
-        
-def currentRoleName(hexcode: str) -> str:
-    return f"sc.{hexcode}" #never underestimate my laziness      
-        
-def isValidHex(hexcode) -> bool:
-    if not isinstance(hexcode, str):  
-        return False
-        
-    return bool(re.fullmatch(r"[0-9A-Fa-f]{6}", hexcode))
-
-def getName(user) -> str:
-    return user.nick if user.nick else user.display_name
-
-def getUsers(guild, name: str) -> list:
-    matches = [member for member in guild.members if member.display_name == name]
-    return matches
-
-def findSupercolorRole(user):
-    for role in user.roles:
-        if role.name.startswith("sc."):
-            return role
-            
-    return None
-            
-def filterUsers(users: list) -> list:
-    filtered_users = []
-    
-    for user in users:
-        if findSupercolorRole(user):
-            filtered_users.append(user)
-            
-    return filtered_users
-
-def check(ctx):
-    return lambda m: m.author == ctx.author and m.channel == ctx.channel #if message sent is the same channel & author as the original message
-
-
-async def getInputOfType(func, ctx):
-    while True:
-        try:
-            msg = await bot.wait_for('message', check=check(ctx))
-            return func(msg.content)
-        except ValueError:
-            ctx.send("Enter a number.")
-            continue
-
-async def removeSupercolor(ctx):
-    user = ctx.message.author
-    role = findSupercolorRole(user)
-    if role is None:
-        return False
-
-    await user.remove_roles(role)
-
-    if len(role.members) == 0:
-        await role.delete()
-
-    return True
-
-                
-async def addSupercolor(ctx, hexcode):
-    name = currentRoleName(hexcode)
-    user = ctx.message.author
-        
-    role = discord.utils.get(ctx.guild.roles, name=name)
-    
-    if role is None:
-        role = await ctx.guild.create_role(name=name, color=discord.Color(int(hexcode, 16)))
-        await role.edit(position=len(ctx.guild.roles) - 2)
-        
-    await user.add_roles(role)
 
 
 @bot.command(pass_context=True, brief="A test command to check if the bot is working")
@@ -91,6 +19,12 @@ async def test(ctx):
 @bot.command(pass_context=True, aliases=['sc'], help="Command format: polaroid supercolor <hexcode>", description="Uses user input of a 6-character hex code to create a role with that color and add it to the user. The color role includes the user's username to avoid name conflicts", brief="Changes nickname color using a hex code input")
 async def supercolor(ctx, hexcode=None):
     if isValidHex(hexcode):
+
+        for c in disabled_colors:
+            if in_hue_range(c.hex, hexcode) and not (set([role for role in c.allowed_roles]) & set([role.id for role in ctx.author.roles])):
+                await ctx.send("This color is disabled, and you do not have the permissions to access it!")
+
+
         await removeSupercolor(ctx)
         await addSupercolor(ctx, hexcode)
 
@@ -123,7 +57,7 @@ async def currentcolor(ctx):
     embed.set_footer(text=f"Command: polaroid supercolor {hexcode}")
     await ctx.send(embed=embed)
             
-@bot.command(pass_context=True)
+@bot.command(aliases=['copy'])
 async def copycolor(ctx, username):
     users: list = getUsers(ctx.guild, username)
     
@@ -151,7 +85,7 @@ async def copycolor(ctx, username):
             await ctx.send(embed=embed)
 
         while not found_user:
-            requested_user: int = await getInputOfType(int, ctx)
+            requested_user: int = await getInputOfType(int, ctx, bot)
             if requested_user in users_dict:
                 found_user = users_dict[requested_user]
             else:
@@ -164,4 +98,14 @@ async def copycolor(ctx, username):
         await addSupercolor(ctx, hexcode)
         colorembed = discord.Embed(title='*Click!*', description=f"You have been given the color #{hexcode}.", color=int(hexcode, 16))
         await ctx.send(embed=colorembed)
-        
+
+@bot.command(aliases=['whitelist', 'disable'])
+async def disablecolor(ctx, hexcode: str, *exempt_roles: discord.Role):
+    if isValidHex(hexcode):
+        await disableColor(ctx, hexcode, [role.id for role in exempt_roles])
+
+        colorembed = discord.Embed(title='*Click!*', description=f"The color role #{hexcode} has been disabled.", color=int(hexcode, 16))
+        await ctx.send(embed=colorembed)
+        await ctx.send(disabled_colors)
+    else:
+        await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode.')
