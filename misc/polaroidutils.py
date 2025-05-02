@@ -47,17 +47,6 @@ def findSupercolorRole(user):
 
     return None
 
-
-def filterUsers(users: list) -> list:
-    filtered_users = []
-
-    for user in users:
-        if findSupercolorRole(user):
-            filtered_users.append(user)
-
-    return filtered_users
-
-
 def check(ctx):
     return lambda \
         m: m.author == ctx.author and m.channel == ctx.channel  # if message sent is the same channel & author as the original message
