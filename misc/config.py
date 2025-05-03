@@ -27,7 +27,7 @@ ACTIVITY: Final[discord.Activity] = discord.Activity(type=discord.ActivityType.l
 
 STARTING: Final[discord.CustomActivity] = discord.CustomActivity(name="STARTING")
 
-FTC_LOGO: Final[str] =  "../bots/ftc.png"
+FTC_LOGO: Final[str] =  "../bot/ftc.png"
 
 # ---------------- UTILS -------------------#
 

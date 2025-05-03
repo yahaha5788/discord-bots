@@ -24,7 +24,7 @@ class MonitorCog(commands.Cog):
         await self.sendNotifications.start()
 
     def setEvents(self):
-        with open('../bots/following.json', 'r') as following:
+        with open('../bot/following.json', 'r') as following:
             followed_teams: dict[str, list[str]] = json.load(following)
             for numbers in followed_teams.values():
                 for number in numbers:
@@ -46,7 +46,7 @@ class MonitorCog(commands.Cog):
     async def follow(self, interaction: discord.Interaction, number: int):
         guild_id = str(interaction.guild_id)
 
-        with open('../bots/following.json', 'r+') as following, open('../bots/channel_des.json', 'r') as channel_des:
+        with open('../bot/following.json', 'r+') as following, open('../bot/channel_des.json', 'r') as channel_des:
             followed_teams: dict[str, list[str]] = json.load(following)
             channels: dict[str, int] = json.load(channel_des)
 
@@ -80,7 +80,7 @@ class MonitorCog(commands.Cog):
     async def unfollow(self, interaction: discord.Interaction, number: int):
         guild_id = str(interaction.guild_id)
 
-        with open('../bots/following.json', 'r+') as following:
+        with open('../bot/following.json', 'r+') as following:
             followed_teams: dict[str, list[str]] = json.load(following)
 
             if guild_id not in followed_teams.keys():
@@ -109,7 +109,7 @@ class MonitorCog(commands.Cog):
         guild_id = str(interaction.guild_id)
         channel_id = interaction.channel_id
 
-        with open('../bots/channel_des.json', 'r+') as channel_des:
+        with open('../bot/channel_des.json', 'r+') as channel_des:
             channels: dict[str, int] = json.load(channel_des)
             channels[guild_id] = channel_id
 
@@ -124,7 +124,7 @@ class MonitorCog(commands.Cog):
 
         await self.bot.wait_until_ready()
 
-        with open('../bots/channel_des.json', 'r') as channels, open('../bots/following.json', 'r') as following:
+        with open('../bot/channel_des.json', 'r') as channels, open('../bot/following.json', 'r') as following:
             notif_channels: dict[str, int] = json.load(channels)
             followed_teams: dict[str, list[str]] = json.load(following)
 
