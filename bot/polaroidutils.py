@@ -1,11 +1,14 @@
 import math
-from typing import NamedTuple
+from typing import NamedTuple, Final
 import matplotlib.pyplot as plt
 import numpy as np
 import colorsys
 import discord
 from discord.ext.commands import MissingPermissions, Bot
 import re
+
+GOLD: Final[str] = 'BBA53D'
+EMBED_COLOR: Final[int] = int(GOLD, 16)
 
 class DisabledColor(NamedTuple):
     hex: str

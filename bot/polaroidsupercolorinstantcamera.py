@@ -1,8 +1,7 @@
 from discord.ext import commands
 import discord.utils
 from typing import Optional
-from misc.polaroidutils import *
-from misc.config import EMBED_COLOR
+from bot.polaroidutils import *
 
 command_prefix = "p!"
 activity = discord.Game(name="with colors")
