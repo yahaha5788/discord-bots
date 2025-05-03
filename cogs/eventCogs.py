@@ -14,8 +14,8 @@ class EventCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.teamevents))
-        # self.bot.tree.add_command(addAppCommand(self.bot)(self.upcomingevents))
+        addAppCommand(self.bot)(self.teamevents)
+        # addAppCommand(self.bot)(self.upcomingevents)
 
     @commandAttrs(
         category="Events",
@@ -66,8 +66,8 @@ class QualificationCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.qualifiedstates))
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.qualifiedworlds))
+        addAppCommand(self.bot)(self.qualifiedstates)
+        addAppCommand(self.bot)(self.qualifiedworlds)
 
     @commandAttrs(
         category='Qualification',

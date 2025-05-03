@@ -13,8 +13,8 @@ class HelpCog(commands.Cog):
         self.commands = [CategorizedAppCommand(command) for command in self.bot.tree.get_commands()]
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.help))
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.intro))
+        addAppCommand(self.bot)(self.help)
+        addAppCommand(self.bot)(self.intro)
 
     async def allHelp(self, interaction: discord.Interaction):
         current_page = discord.Embed(

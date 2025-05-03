@@ -12,10 +12,10 @@ class StatsCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.quickstats))
-        # self.bot.tree.add_command(addAppCommand(self.bot)(self.customstat))
-        # self.bot.tree.add_command(addAppCommand(self.bot)(self.recentmatches))
-        # self.bot.tree.add_command(addAppCommand(self.bot)(self.compareteams))
+        addAppCommand(self.bot)(self.quickstats)
+        # (addAppCommand(self.bot)(self.customstat)
+        # (addAppCommand(self.bot)(self.recentmatches)
+        # (addAppCommand(self.bot)(self.compareteams)
 
     @commandAttrs(
         category='Stats',
@@ -95,7 +95,7 @@ class InfoCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.teaminfo))
+        addAppCommand(self.bot)(self.teaminfo)
 
     @commandAttrs(
         category='Info',

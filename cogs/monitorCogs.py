@@ -15,9 +15,9 @@ class MonitorCog(commands.Cog):
         self.FOLLOWED_TEAMS_UPCOMING_EVENTS: dict[str, UpcomingEventChecker] = {}
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.designatechannel))
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.follow))
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.unfollow))
+        addAppCommand(self.bot)(self.designatechannel)
+        addAppCommand(self.bot)(self.follow)
+        addAppCommand(self.bot)(self.unfollow)
 
     async def startNotificationLoop(self):
         self.setEvents()

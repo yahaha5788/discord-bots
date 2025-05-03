@@ -10,10 +10,10 @@ class FunCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.dice))
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.flip))
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.eightball))
-        # self.bot.tree.add_command(addAppCommand(self.bot)(self.trivia))
+        addAppCommand(self.bot)(self.dice)
+        addAppCommand(self.bot)(self.flip)
+        addAppCommand(self.bot)(self.eightball)
+        addAppCommand(self.bot)(self.trivia)
 
     @commandAttrs(
         name='dice',

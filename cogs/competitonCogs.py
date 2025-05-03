@@ -18,8 +18,7 @@ class CompetitionCog(commands.Cog):
             self.event_logo = logo.read()
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.worlds))
-    #     self.bot.tree.add_command(addAppCommand(self.bot)(self.setstates))
+        addAppCommand(self.bot)(self.worlds)
 
     async def createEvent(self, guild: discord.Guild, name: str, day: EventDates, vc: VoiceChannel, links: str) -> discord.ScheduledEvent:
         start_time = datetime(int(day.year), int(day.month), int(day.start_day), 12, 0, 0, tzinfo=timezone.utc)

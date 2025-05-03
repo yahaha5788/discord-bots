@@ -10,8 +10,8 @@ class RecordCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.worldrecord))
-        self.bot.tree.add_command(addAppCommand(self.bot)(self.bestteam))
+        addAppCommand(self.bot)(self.worldrecord)
+        addAppCommand(self.bot)(self.bestteam)
 
     @commandAttrs(
         category="Records",

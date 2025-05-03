@@ -29,14 +29,6 @@ STARTING: Final[discord.CustomActivity] = discord.CustomActivity(name="STARTING"
 
 FTC_LOGO: Final[str] =  "../bots/ftc.png"
 
-with open('../bots/guilds.json', 'r') as guilds_json:
-    guilds: dict[str, int] = json.load(guilds_json)
-    command_guilds: list[discord.Object] = []
-    for guild in guilds.values():
-        command_guilds.append(discord.Object(id=guild))
-
-    VALID_GUILDS: Final[list[discord.Object]] = command_guilds
-
 # ---------------- UTILS -------------------#
 
 def getCodeDesc(code: int) -> str:
@@ -101,8 +93,8 @@ def addAppCommand(
         command.category = category
         command.param_guide = param_guide
 
-        if VALID_GUILDS:
-            for guild in VALID_GUILDS:
+        if bot.guilds:
+            for guild in bot.guilds:
                 bot.tree.add_command(command, guild=guild)
         else:
             bot.tree.add_command(command)
