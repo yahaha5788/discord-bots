@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import colorsys
 import discord
-from discord.ext.commands import MissingPermissions
+from discord.ext.commands import MissingPermissions, Bot
 import re
 
 class DisabledColor(NamedTuple):
@@ -153,10 +153,11 @@ async def remove_supercolor(user, role) -> None:
     if len(role.members) == 0:
         await role.delete()
 
-async def add_supercolor(ctx, hexcode) -> None:
+async def add_supercolor(ctx, bot: Bot, hexcode) -> None:
     """
     Adds a supercolor role to user, and creates one if it does not exist already.
     :param ctx: The context, passed in from the command
+    :param bot: The bot
     :param hexcode: The hexcode to be used in the role name and color
     """
     name = _current_role_name(hexcode)
@@ -166,7 +167,9 @@ async def add_supercolor(ctx, hexcode) -> None:
 
     if role is None:
         role = await ctx.guild.create_role(name=name, color=discord.Color(int(hexcode, 16)), hoist=False, mentionable=False)
-        await role.edit(position=len(ctx.guild.roles) - 2)
+        bot_user: discord.Member = ctx.guild.get_member(bot.user.id)
+        highest_role = ctx.guild.roles.index(bot_user.top_role)
+        await role.edit(position=highest_role - 1)
 
     await user.add_roles(role)
 

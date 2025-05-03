@@ -2,6 +2,7 @@ from discord.ext import commands
 import discord.utils
 from typing import Optional
 from misc.polaroidutils import *
+from misc.config import EMBED_COLOR
 
 command_prefix = "p!"
 activity = discord.Game(name="with colors")
@@ -30,7 +31,7 @@ async def supercolor(ctx, hexcode=None):
         if role:
             await remove_supercolor(ctx.message.author, role)
             
-        await add_supercolor(ctx, hexcode)
+        await add_supercolor(ctx, bot, hexcode)
 
         colorembed = discord.Embed(title='*Click!*', description=f"You have been given the color #{hexcode}.", color=int(hexcode, 16))
         set_footer(colorembed)
@@ -50,7 +51,7 @@ async def clearcolor(ctx):
         set_footer(clearembed)
         await ctx.send(embed=clearembed)
     else: 
-        ctx.send("You do not have a color role")
+        await ctx.send("You do not have a color role")
     
 @bot.command(
     aliases=['current'],
@@ -63,21 +64,23 @@ async def currentcolor(ctx):
     role = find_supercolor_role(user)
     
     if not role:
-        ctx.send("You do not have a color role")
+        await ctx.send("You do not have a color role.")
         return
         
     hexcode = f"{role.color.value:06X}"
     
-    currentembed = discord.Embed(description=f"{get_name(user)}'s current color is #{hexcode}.")
+    currentembed = discord.Embed(description=f"{get_name(user)}'s current color is #{hexcode}.", color=int(hexcode, 16))
     currentembed.add_field(name='Command:', value=f"`p!supercolor {hexcode}`")
     set_footer(currentembed)
     await ctx.send(embed=currentembed)
             
 @bot.command(
     aliases=['copy'],
-    usage='p!copycolor <user>'
+    usage='p!copycolor <user>',
+    description="Copies a user's current color role.",
+    brief="Copies a user's current color role."
 )
-async def copycolor(ctx, user):
+async def copycolor(ctx, user: discord.User):
     user = ctx.guild.get_member(user.id)
 
     if user:
@@ -88,8 +91,8 @@ async def copycolor(ctx, user):
 
         hexcode = f"{role.color.value:06X}"
 
-        await remove_supercolor(ctx, role)
-        await add_supercolor(ctx, hexcode)
+        await remove_supercolor(user, role)
+        await add_supercolor(ctx, bot, hexcode)
         colorembed = discord.Embed(title='*Click!*', description=f"You have been given the color #{hexcode}.", color=int(hexcode, 16))
         set_footer(colorembed)
         await ctx.send(embed=colorembed)
@@ -100,6 +103,7 @@ async def copycolor(ctx, user):
 @bot.command(
     aliases=['whitelist', 'disable'],
     brief="An admin command that disables a certain color.",
+    usage='p!disablecolor <hexcode>',
     description='An admin command that disables a certain color as well as ones around it to preserve the meaning of certain colors.'
 )
 async def disablecolor(ctx, hexcode: str, *exempt_roles: discord.Role):
@@ -121,15 +125,18 @@ async def disablecolor(ctx, hexcode: str, *exempt_roles: discord.Role):
     description="Shows this menu.",
 )
 async def help(ctx, command: Optional[str] = None):
-    cmd = [cmd for cmd in bot.commands if cmd.name == command][0]
-    if not cmd:
-        helpembed = discord.Embed(title="Help Menu", description="Type `p!help <command>` for help on a specific command.")
+    cmd = [cmd for cmd in bot.commands if cmd.name == command]
+    if not cmd and not command:
+        helpembed = discord.Embed(title="Help Menu", description="Type `p!help <command>` for help on a specific command.", color=EMBED_COLOR)
         for bot_command in bot.commands:
             header = bot_command.usage
             value = bot_command.brief
             helpembed.add_field(name=header, value=value, inline=False)
+    elif cmd and command:
+        cmd = cmd[0]
+        helpembed = discord.Embed(title=cmd.usage, description=cmd.description, color=EMBED_COLOR)
     else:
-        helpembed = discord.Embed(title=cmd.usage, description=cmd.description)
+        helpembed = discord.Embed(title='Help Error', description="That is not a valid command name. Type `p!help` to see all commands.", color=EMBED_COLOR)
 
     set_footer(helpembed)
     await ctx.send(embed=helpembed)
