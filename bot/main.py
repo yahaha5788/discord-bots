@@ -10,7 +10,5 @@ if __name__ == '__main__':
     load_dotenv('harold_key.env')
 
     harold_key = os.getenv('HAROLD_KEY')
-    #polaroid_key = os.getenv('POLAROID_KEY')
 
     harold.run(harold_key, log_handler=handler, log_level=logging.DEBUG)
-    #polaroid.run(polaroid_key)
