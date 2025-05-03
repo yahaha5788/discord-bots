@@ -7,7 +7,7 @@ handler = logging.FileHandler(filename='harold.log', encoding='utf-8', mode='w')
 
 
 if __name__ == '__main__':
-    load_dotenv('harold_key.env')
+    load_dotenv('keys.env')
 
     harold_key = os.getenv('HAROLD_KEY')
 
