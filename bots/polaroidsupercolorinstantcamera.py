@@ -1,7 +1,7 @@
 from discord.ext import commands
 import discord.utils
 from typing import Optional
-from bot.polaroidutils import *
+from bots.polaroidutils import *
 
 command_prefix = "p!"
 activity = discord.Game(name="with colors")
