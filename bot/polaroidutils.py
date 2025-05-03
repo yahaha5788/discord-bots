@@ -134,7 +134,7 @@ async def get_input_of_type(msg_type, ctx, bot):
     and using a second input.
     :param msg_type: The type of input
     :param ctx: The context, passed in from the command
-    :param bot: The bots, obviously
+    :param bot: The bot, obviously
     :return: The message, if it is the correct type
     """
     while True:
@@ -160,7 +160,7 @@ async def add_supercolor(ctx, bot: Bot, hexcode) -> None:
     """
     Adds a supercolor role to user, and creates one if it does not exist already.
     :param ctx: The context, passed in from the command
-    :param bot: The bots
+    :param bot: The bot
     :param hexcode: The hexcode to be used in the role name and color
     """
     name = _current_role_name(hexcode)
