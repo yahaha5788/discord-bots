@@ -1,5 +1,4 @@
 import math
-import tkinter as tk
 from typing import NamedTuple
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,53 +16,84 @@ disabled_colors: list[DisabledColor] = []
 # --------------------------- DEF ------------------------------#
 
 
-def currentRoleName(hexcode: str) -> str:
+def _current_role_name(hexcode: str) -> str:
+    """
+    Gives the current role name schema so it doesn't have to be changed everywhere.
+    :param hexcode: The hexcode to use in the role name
+    :return: The formatted name of the role
+    """
     return f"sc.{hexcode}"  # never underestimate my laziness
 
 
-def isValidHex(hexcode) -> bool:
-    if not isinstance(hexcode, str):
-        return False
+def is_valid_hex(hexcode: str) -> bool:
+    """
+    Checks if a given string is a valid 6-character hexcode.
+    :param hexcode: The hexcode to check
+    :return: If the hexcode is a valid hexcode
+    """
 
     return bool(re.fullmatch(r"[0-9A-Fa-f]{6}", hexcode))
 
-def findRole(hexcode: str, guild: discord.Guild) -> discord.Role:
-    role = discord.utils.get(guild.roles, name=currentRoleName(hexcode))
-    return role
-
-def getName(user) -> str:
+def get_name(user) -> str:
+    """
+    Gets the display or nickname for a user (used only in currentcolor).
+    :param user: The user to get the name of
+    :return: The nick or display name of the user
+    """
     return user.nick if user.nick else user.display_name
 
-
-def getUsers(guild, name: str) -> list:
-    matches = [member for member in guild.members if member.display_name == name]
-    return matches
-
-
-def findSupercolorRole(user):
+def find_supercolor_role(user):
+    """
+    Gets a supercolor role from a user if they have one.
+    :param user: The user to check
+    :return: The role, or None if no role was found
+    """
     for role in user.roles:
         if role.name.startswith("sc."):
             return role
 
     return None
 
-def check(ctx):
-    return lambda \
-        m: m.author == ctx.author and m.channel == ctx.channel  # if message sent is the same channel & author as the original message
+def _check(ctx):
+    return lambda m: m.author == ctx.author and m.channel == ctx.channel  # if message sent is the same channel & author as the original message
 
-def setFooter(embed: discord.Embed) -> None:
+def set_footer(embed: discord.Embed) -> None:
+    """
+    Adds a field to the embed with the GitHub repository link and link to report an issue.
+    :param embed: The embed to add the links to
+    """
     embed.add_field(name="Links", value="[Report a problem](https://github.com/yahaha5788/discord-bots/issues/new) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
 
-def hex_to_hsv(hex_color):
-    r, g, b = tuple(int(hex_color[i:i+2], 16) / 255 for i in (0, 2, 4))
+def _hex_to_hsv(hexcode) -> tuple[float, float, float]:
+    """
+    Converts a hexcode into RGB values, and uses colorsys to convert those RGB values into HSV values.
+    :param hexcode: The hexcode to be converted
+    :return: the hue, saturation, and value
+    """
+    r, g, b = tuple(int(hexcode[i:i+2], 16) / 255 for i in (0, 2, 4))
     return colorsys.rgb_to_hsv(r, g, b)
 
-def hsv_to_hex(h, s, v) -> str:
+def _hsv_to_hex(h, s, v) -> str:
+    """
+    Uses colorsys to convert the hue, saturation, and value of a color into RGB values,
+    then formats the values into parts of a hexcode which are then put together in a string.
+    :param h: The hue of the color
+    :param s: The saturation of the color
+    :param v: The value of the color
+    :return: The hexcode of the color
+    """
     r, g, b = colorsys.hsv_to_rgb(h, s, v)
-    return '{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255)) # whyyy
+    return '{:02x}{:02x}{:02x}'.format(int(r * 255), int(g * 255), int(b * 255))
 
-def plot_color_range(center_hex, offset=3):
-    center_h, s, v = hex_to_hsv(center_hex)
+def plot_color_range(center_hex, offset=3) -> None:
+    """
+    Uses matplotlib to plot a polar graph from the "center" hexcode and an offset (defaults to 3)
+    showing the color's placement on an HSV spectrum and the range of what colors will be disabled.
+    May be used in the future for disable color or a command to show all disables colors.
+    :param center_hex: The hexcode the use as a reference
+    :param offset: The offset (in degrees) in each direction for disabled colors
+    """
+    center_h, s, v = _hex_to_hsv(center_hex)
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     ax.set_theta_direction(-1)
@@ -95,30 +125,41 @@ def plot_color_range(center_hex, offset=3):
 
 # --------------------------- ASYNC DEF ------------------------------#
 
-async def getInputOfType(func, ctx, bot):
+async def get_input_of_type(msg_type, ctx, bot):
+    """
+    Was used for selecting a user for copycolor. Might be used later for supercolor in saving roles by finding similar colors
+    and using a second input.
+    :param msg_type: The type of input
+    :param ctx: The context, passed in from the command
+    :param bot: The bot, obviously
+    :return: The message, if it is the correct type
+    """
     while True:
         try:
-            msg = await bot.wait_for('message', check=check(ctx))
-            return func(msg.content)
+            msg = await bot.wait_for('message', check=_check(ctx))
+            return msg_type(msg.content)
         except ValueError:
-            ctx.send("Enter a number.")
-            continue
+            ctx.send(f"Please enter a {msg_type}") # this might say something like builtins.str but idk
+            continue                               # i'll fix it if it comes up but for now it's fine
 
-async def removeSupercolor(ctx):
-    user = ctx.message.author
-    role = findSupercolorRole(user)
-    if role is None:
-        return False
-
+async def remove_supercolor(user, role) -> None:
+    """
+    Removes a supercolor role from the user, and deletes it if nobody else has that role.
+    :param user: The user to remove the role from
+    :param role: The role to remove
+    """
     await user.remove_roles(role)
 
     if len(role.members) == 0:
         await role.delete()
 
-    return True
-
-async def addSupercolor(ctx, hexcode):
-    name = currentRoleName(hexcode)
+async def add_supercolor(ctx, hexcode) -> None:
+    """
+    Adds a supercolor role to user, and creates one if it does not exist already.
+    :param ctx: The context, passed in from the command
+    :param hexcode: The hexcode to be used in the role name and color
+    """
+    name = _current_role_name(hexcode)
     user = ctx.message.author
 
     role = discord.utils.get(ctx.guild.roles, name=name)
@@ -129,25 +170,43 @@ async def addSupercolor(ctx, hexcode):
 
     await user.add_roles(role)
 
-async def disableColor(ctx, hexcode: str, allowed_roles: list[int]):
-    if ctx.author.guild_permissions.administrator:
+async def disable_color(ctx, hexcode: str, allowed_roles: list[int]) -> None:
+    """
+    Disables a given color from a hexcode, as well as a range of similar colors around it.
+    :param ctx: The context, passed in from the command
+    :param hexcode: The hexcode to disable
+    :param allowed_roles: Any roles taken as *exempt_roles. These roles are exemple from the effect and can still use the color normally
+    :raise MissingPermissions: If the command user is not an administrator.
+    """
+    if ctx.message.author.guild_permissions.administrator:
         disabled_colors.append(DisabledColor(hexcode, allowed_roles))
-        role = findRole(hexcode, ctx.guild)
+        role = await discord.utils.get(ctx.guild.roles, name=_current_role_name(hexcode))
         if role:
             await role.delete()
     else:
         raise MissingPermissions(["Administrator"])
 
-def get_color_at_angle(base_hex, offset_deg) -> str:
-    h, s, v = hex_to_hsv(base_hex)
+def _get_color_at_angle(base_hex, offset_deg) -> str:
+    """
+    Gets a hexcode at an offset from a given base hex.
+    :param base_hex: The hexcode to use as reference
+    :param offset_deg: The amount to offset by
+    :return: The offset hexcode.
+    """
+    h, s, v = _hex_to_hsv(base_hex)
     base_deg = h * 360
 
     new_deg = (base_deg + offset_deg) % 360
     h = new_deg / 360
 
-    return f"#{hsv_to_hex(h, s, v)}"
+    return f"#{_hsv_to_hex(h, s, v)}"
 
-def fix_radians(rad):
+def _fix_radians(rad: float) -> float:
+    """
+    Fixes a radian value to make sure that values across the circle (at positions like 358° if a hexcode at 0° is disabled) still get disabled
+    :param rad: The radian value to fix
+    :return: The fixed radian value
+    """
     while rad > math.pi:
         rad -= 2 * math.pi
 
@@ -156,14 +215,21 @@ def fix_radians(rad):
 
     return rad
 
-def in_hue_range(base, ref, offset=3):
-    base_h, _, _ = hex_to_hsv(base)
-    ref_h, _, _ = hex_to_hsv(ref)
+def in_hue_range(base, ref, offset=3) -> bool:
+    """
+    Checks if a given hexcode is within a certain distance on the HSV spectrum from a base hexcode
+    :param base: The base disabled hexcode
+    :param ref: The hexcode to check
+    :param offset: The degree offset from the base hexcode where hexcodes can be used again. Defaults to three.
+    :return: If the given hexcode is within the offset from the base hexcode.
+    """
+    base_h, _, _ = _hex_to_hsv(base)
+    ref_h, _, _ = _hex_to_hsv(ref)
 
     base_rad = math.radians(base_h * 360)
     ref_rad = math.radians(ref_h * 360)
 
-    return abs(fix_radians(base_rad - ref_rad)) < math.radians(offset)
+    return abs(_fix_radians(base_rad - ref_rad)) < math.radians(offset)
 
 
 
