@@ -76,30 +76,41 @@ async def currentcolor(ctx):
             
 @bot.command(
     aliases=['copy'],
-    usage='p!copycolor <user>',
-    description="Copies a user's current color role.",
+    usage='p!copycolor (as a reply)',
+    description="Copies a user's current color role by replying to their message.",
     brief="Copies a user's current color role."
 )
-async def copycolor(ctx, user: discord.User):
-    user = ctx.guild.get_member(user.id)
+async def copycolor(ctx):
+    if not ctx.message.reference:
+        await ctx.send("Reply to a user's message to copy their color.")
+        return
 
-    if user:
-        role = find_supercolor_role(user)
-        if not role:
-            await ctx.send("That user does not have a color role.")
-            return
+    try:
+        replied_message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+        target_user = replied_message.author
+    except Exception:
+        await ctx.send("Couldn't find the user from the replied message.")
+        return
 
-        hexcode = f"{role.color.value:06X}"
-        hexcode = hexcode.upper()
+    member = ctx.guild.get_member(target_user.id)
+    if not member:
+        await ctx.send("That user is not in this server.")
+        return
 
-        await remove_supercolor(user, role)
-        await add_supercolor(ctx, bot, hexcode)
-        colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has copied the color #{hexcode} from {get_name(user)}", color=int(hexcode, 16))
-        set_footer(colorembed)
-        await ctx.send(embed=colorembed)
+    role = find_supercolor_role(member)
+    if not role:
+        await ctx.send("That user does not have a color role.")
+        return
 
-    else:
-        await ctx.send("That user does not exist!")
+    hexcode = f"{role.color.value:06X}".upper()
+
+    await remove_supercolor(ctx.message.author, find_supercolor_role(ctx.message.author))
+    await add_supercolor(ctx, bot, hexcode)
+
+    colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has copied the color #{hexcode} from {get_name(target_user)}", color=int(hexcode, 16))
+    set_footer(colorembed)
+    await ctx.send(embed=colorembed)
+
 
 @bot.command(
     aliases=['whitelist', 'disable'],
