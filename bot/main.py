@@ -11,4 +11,4 @@ if __name__ == '__main__':
 
     polaroid_key = os.getenv('POLAROID_KEY')
 
-    polaroid.run(polaroid_key)
+    polaroid.run(polaroid_key, log_handler=handler, log_level=logging.DEBUG)

@@ -32,7 +32,7 @@ async def supercolor(ctx, hexcode: str = None):
             
         await add_supercolor(ctx, bot, hexcode)
 
-        colorembed = discord.Embed(title='*Click!*', description=f"You have been given the color #{hexcode}.", color=int(hexcode, 16))
+        colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has been given the color #{hexcode}.", color=int(hexcode, 16))
         set_footer(colorembed)
         await ctx.send(embed=colorembed)
     else:
@@ -46,7 +46,7 @@ async def clearcolor(ctx):
     role = find_supercolor_role(ctx.message.author)
     if role:
         await remove_supercolor(ctx.message.author, role)
-        clearembed = discord.Embed(title='*Click!*', description='Your color role has been removed')
+        clearembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)}'s color role has been removed.")
         set_footer(clearembed)
         await ctx.send(embed=clearembed)
     else: 
@@ -94,7 +94,7 @@ async def copycolor(ctx, user: discord.User):
 
         await remove_supercolor(user, role)
         await add_supercolor(ctx, bot, hexcode)
-        colorembed = discord.Embed(title='*Click!*', description=f"You have been given the color #{hexcode}.", color=int(hexcode, 16))
+        colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has copied the color #{hexcode} from {get_name(user)}", color=int(hexcode, 16))
         set_footer(colorembed)
         await ctx.send(embed=colorembed)
 
