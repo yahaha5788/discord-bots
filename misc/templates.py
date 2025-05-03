@@ -125,6 +125,7 @@ class MajorQualifyingEvent(NamedTuple):
     name: str
     dates: EventDates
     teams: list[Team]
+    matches: list[Match]
     started: bool
     ongoing: bool
     finished: bool

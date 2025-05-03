@@ -15,17 +15,17 @@ bot = commands.Bot(command_prefix='h$', intents=intents, activity=STARTING)
 async def on_ready():
     await bot.add_cog(basicCogs.FunCog(bot))
 
-    # await bot.add_cog(competitonCogs.CompetitionCog(bot)) TODO: FINISH THIS
+    await bot.add_cog(competitonCogs.CompetitionCog(bot))
 
-    await bot.add_cog(eventCogs.EventCog(bot))
-    await bot.add_cog(eventCogs.QualificationCog(bot))
-
-    await bot.add_cog(monitorCogs.MonitorCog(bot))
-
-    await bot.add_cog(recordCogs.RecordCog(bot))
-
-    await bot.add_cog(statsCogs.StatsCog(bot))
-    await bot.add_cog(statsCogs.InfoCog(bot))
+    # await bot.add_cog(eventCogs.EventCog(bot))
+    # await bot.add_cog(eventCogs.QualificationCog(bot))
+    #
+    # await bot.add_cog(monitorCogs.MonitorCog(bot))
+    #
+    # await bot.add_cog(recordCogs.RecordCog(bot))
+    #
+    # await bot.add_cog(statsCogs.StatsCog(bot))
+    # await bot.add_cog(statsCogs.InfoCog(bot))
 
     await bot.add_cog(helpCogs.HelpCog(bot))
 

@@ -1,5 +1,5 @@
     {
-        eventsSearch(searchText: "edison Division", season: 2024, type: FIRSTChampionship) {
+        eventsSearch(searchText: "finals Divison",season: 2024, type: FIRSTChampionship) {
             start
             end
             started
@@ -11,6 +11,25 @@
                 team {
                     name
                     number
+                }
+            }
+            matches {
+                
+                teams {
+                    teamNumber
+                }
+                scores {
+                    ...on MatchScores2024 {
+                        blue {
+
+                            totalPoints
+                            totalPointsNp
+                        }
+                        red {
+                            totalPointsNp
+                            totalPoints
+                        }
+                    }
                 }
             }
         }
