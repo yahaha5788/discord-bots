@@ -17,9 +17,9 @@ bot = commands.Bot(command_prefix=command_prefix, intents=intents, activity=acti
              usage="p!supercolor <hexcode>",
              description="Uses user input of a 6-character hex code to create a role with that color and add it to the user.",
              brief="Changes nickname color using a hex code input")
-async def supercolor(ctx, hexcode=None):
+async def supercolor(ctx, hexcode: str = None):
+    hexcode = hexcode.upper()
     if is_valid_hex(hexcode):
-
         for c in disabled_colors:
             if in_hue_range(c.hex, hexcode) and not (set([role for role in c.allowed_roles]) & set([role.id for role in ctx.message.author.roles])):
                 await ctx.send("This color is disabled, and you do not have the permissions to access it!")
@@ -68,6 +68,7 @@ async def currentcolor(ctx):
         return
         
     hexcode = f"{role.color.value:06X}"
+    hexcode = hexcode.upper()
     
     currentembed = discord.Embed(description=f"{get_name(user)}'s current color is #{hexcode}.", color=int(hexcode, 16))
     currentembed.add_field(name='Command:', value=f"`p!supercolor {hexcode}`")
@@ -90,6 +91,7 @@ async def copycolor(ctx, user: discord.User):
             return
 
         hexcode = f"{role.color.value:06X}"
+        hexcode = hexcode.upper()
 
         await remove_supercolor(user, role)
         await add_supercolor(ctx, bot, hexcode)
@@ -107,6 +109,7 @@ async def copycolor(ctx, user: discord.User):
     description='An admin command that disables a certain color as well as ones around it to preserve the meaning of certain colors.'
 )
 async def disablecolor(ctx, hexcode: str, *exempt_roles: discord.Role):
+    hexcode = hexcode.upper()
     if is_valid_hex(hexcode):
         try:
             await disable_color(ctx, hexcode, [role.id for role in exempt_roles])
