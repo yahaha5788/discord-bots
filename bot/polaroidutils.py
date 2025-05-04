@@ -60,6 +60,9 @@ def find_supercolor_role(user):
 def _check(ctx):
     return lambda m: m.author == ctx.author and m.channel == ctx.channel  # if message sent is the same channel & author as the original message
 
+def _check_proceed(ctx):
+    return lambda m: (m.author == ctx.author) and (m.channel == ctx.channel) and (m.content.lower() in ['yes', 'no'])
+
 def set_footer(embed: discord.Embed) -> None:
     """
     Adds a field to the embed with the GitHub repository link and link to report an issue.
@@ -128,7 +131,7 @@ def plot_color_range(center_hex, offset=3) -> None:
 
 # --------------------------- ASYNC DEF ------------------------------#
 
-async def get_input_of_type(msg_type, ctx, bot):
+async def get_input_of_type(msg_type, ctx, bot: discord.ext.commands.Bot):
     """
     Was used for selecting a user for copycolor. Might be used later for supercolor in saving roles by finding similar colors
     and using a second input.
@@ -139,11 +142,28 @@ async def get_input_of_type(msg_type, ctx, bot):
     """
     while True:
         try:
-            msg = await bot.wait_for('message', check=_check(ctx))
+            msg = await bot.wait_for('message', check=_check(ctx), timeout=30)
             return msg_type(msg.content)
         except ValueError:
             ctx.send(f"Please enter a {msg_type}") # this might say something like builtins.str but idk
             continue                               # i'll fix it if it comes up but for now it's fine
+
+async def get_proceed_input(msg_type, ctx, bot: discord.ext.commands.Bot):
+    """
+    Was used for selecting a user for copycolor. Might be used later for supercolor in saving roles by finding similar colors
+    and using a second input.
+    :param msg_type: The type of input
+    :param ctx: The context, passed in from the command
+    :param bot: The bot, obviously
+    :return: The message, if it is the correct type
+    """
+    while True:
+        try:
+            msg = await bot.wait_for('message', check=_check_proceed(ctx), timeout=30)
+            return msg_type(msg.content)
+        except ValueError:
+            ctx.send(f"Please enter yes/no.") # this might say something like builtins.str but idk
+            continue
 
 async def remove_supercolor(user, role) -> None:
     """
@@ -176,21 +196,45 @@ async def add_supercolor(ctx, bot: Bot, hexcode) -> None:
 
     await user.add_roles(role)
 
-async def disable_color(ctx, hexcode: str, allowed_roles: list[int]) -> None:
+async def disable_color(ctx, hexcode: str, allowed_roles: list[int]) -> bool:
     """
     Disables a given color from a hexcode, as well as a range of similar colors around it.
     :param ctx: The context, passed in from the command
     :param hexcode: The hexcode to disable
     :param allowed_roles: Any roles taken as *exempt_roles. These roles are exemple from the effect and can still use the color normally
+    :return: True if the color has been disabled, or False if the color was already disabled
     :raise MissingPermissions: If the command user is not an administrator.
     """
     if ctx.message.author.guild_permissions.administrator:
-        disabled_colors.append(DisabledColor(hexcode, allowed_roles))
-        role = await discord.utils.get(ctx.guild.roles, name=_current_role_name(hexcode))
+        color = DisabledColor(hexcode, allowed_roles)
+        if color in disabled_colors:
+            return False
+
+        disabled_colors.append(color)
+        role: discord.Role = discord.utils.get(ctx.guild.roles, name=_current_role_name(hexcode))
         if role:
             await role.delete()
+            return True
     else:
         raise MissingPermissions(["Administrator"])
+
+async def enable_color(ctx, hexcode: str) -> bool:
+    """
+    Enables a certain color.
+    :param ctx: The context, passed in from the command
+    :param hexcode: The hexcode to enable
+    :return: True if the color has been enabled, or False if the color was never disabled
+    :raise MissingPermissions: If the command user is not an administrator.
+    """
+    if ctx.message.author.guild_permissions.administrator:
+        for color in disabled_colors:
+            if color.hex == hexcode:
+                disabled_colors.remove(color)
+                return True
+        return False
+    else:
+        raise MissingPermissions(["Administrator"])
+
 
 def _get_color_at_angle(base_hex, offset_deg) -> str:
     """
