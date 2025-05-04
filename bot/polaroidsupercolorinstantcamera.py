@@ -153,3 +153,7 @@ async def help(ctx, command: Optional[str] = None):
 
     set_footer(helpembed)
     await ctx.send(embed=helpembed)
+
+# @bot.command()
+# async def say(ctx, content):
+#     await ctx.send(content)
