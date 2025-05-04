@@ -1,3 +1,5 @@
+import shlex
+
 from discord.ext import commands
 import discord.utils
 from typing import Optional
@@ -113,20 +115,66 @@ async def copycolor(ctx):
 
 
 @bot.command(
-    aliases=['whitelist', 'disable'],
+    aliases=['disable'],
     brief="An admin command that disables a certain color.",
     usage='p!disablecolor <hexcode>',
-    description='An admin command that disables a certain color as well as ones around it to preserve the meaning of certain colors.'
+    description='An admin command that disables a certain color. Names of roles can be passed it in the format `"role name"` to define roles that are allowed to use the color.'
 )
-async def disablecolor(ctx, hexcode: str, *exempt_roles: discord.Role):
+async def disablecolor(ctx, hexcode: str, *, exempt_roles: str = None):
     hexcode = hexcode.upper()
     if is_valid_hex(hexcode):
+        if exempt_roles:
+            exempt_roles = shlex.split(exempt_roles)
+        else: exempt_roles = []
+
         try:
-            await disable_color(ctx, hexcode, [role.id for role in exempt_roles])
+            roles = [role for role in ctx.guild.roles if role.name in exempt_roles]
+            if len(roles) < len(exempt_roles):
+                await ctx.send("One or more specified roles were not found. Would you still like to run the command?")
+                proceed = await get_proceed_input(str, ctx, bot)
+                if proceed.lower() == 'yes':
+                    await disable_color(ctx, hexcode, [role.id for role in roles])
+                else:
+                    await ctx.send("Stopping the command.")
+                    return
+
+            elif len(roles) > len(exempt_roles):
+                await ctx.send("Multiple roles have been found from one or more given names. Would you still like to run the command?")
+                proceed = await get_proceed_input(str, ctx, bot)
+                if proceed.lower() == 'yes':
+                    await disable_color(ctx, hexcode, [role.id for role in roles])
+                else:
+                    await ctx.send("Stopping the command.")
+                    return
+
+            else:
+                await disable_color(ctx, hexcode, [role.id for role in roles])
 
             colorembed = discord.Embed(title='*Click!*', description=f"The color role #{hexcode} has been disabled.", color=int(hexcode, 16))
             set_footer(colorembed)
             await ctx.send(embed=colorembed)
+        except MissingPermissions:
+            await ctx.send("You need admin permissions to disable colors! Ask an admin to run this command.")
+    else:
+        await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode.')
+
+@bot.command(
+    aliases=['enable'],
+    brief="An admin command that enables a disabled color.",
+    usage='p!enablecolor <hexcode>',
+    description='An admin command that enables a previously disabled color.'
+)
+async def enablecolor(ctx, hexcode: str):
+    hexcode = hexcode.upper()
+    if is_valid_hex(hexcode):
+        try:
+            enable = await enable_color(ctx, hexcode)
+            if enable:
+                colorembed = discord.Embed(title='*Click!*', description=f"The color role #{hexcode} has been enabled.", color=int(hexcode, 16))
+                set_footer(colorembed)
+                await ctx.send(embed=colorembed)
+            else:
+                await ctx.send("That color is already enabled!")
         except MissingPermissions:
             await ctx.send("You need admin permissions to disable colors! Ask an admin to run this command.")
     else:
