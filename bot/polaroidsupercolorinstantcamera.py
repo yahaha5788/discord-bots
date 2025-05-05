@@ -201,8 +201,8 @@ async def supercolors(ctx):
         desc = ""
         for role in supercolor_roles:
             role_hex = f"{role.color.value:06X}".upper()
-            desc += f"{role_hex}\n"
-        rolesembed = discord.Embed(title=f"Supercolor roles in {guild.name}", description=desc)
+            desc += f"#{role_hex}\n"
+        rolesembed = discord.Embed(title=f"Supercolor roles in {guild.name}", description=desc, color=EMBED_COLOR)
         await ctx.send(embed=rolesembed)
     else:
         await ctx.send(f"There are no supercolor roles in {guild.name}. Use `p!supercolor <hexcode>` to make one!")
