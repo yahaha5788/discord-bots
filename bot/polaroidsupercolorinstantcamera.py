@@ -117,7 +117,7 @@ async def copycolor(ctx):
 @bot.command(
     aliases=['disable'],
     brief="An admin command that disables a certain color.",
-    usage='p!disablecolor <hexcode>',
+    usage='p!disablecolor <hexcode> <"exempt role name">',
     description='An admin command that disables a certain color. Names of roles can be passed it in the format `"role name"` to define roles that are allowed to use the color.'
 )
 async def disablecolor(ctx, hexcode: str, *, exempt_roles: str = None):
