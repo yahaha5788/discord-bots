@@ -211,6 +211,19 @@ async def supercolors(ctx):
         await ctx.send(f"There are no supercolor roles in {guild.name}. Use `p!supercolor <hexcode>` to make one!")
 
 @bot.command(
+    aliases=['color'],
+    brief="Sends on embed with a color",
+    usage="p!showcolor <hexcode>",
+    description="Sends an embed with the given color and a copy/paste command"
+)
+async def showcolor(ctx, hexcode):
+    if is_valid_hex(hexcode):
+        colorembed = discord.Embed(title=f"#{hexcode}", description=f"`p!supercolor {hexcode}`", color=int(hexcode, 16))
+        await ctx.send(embed=colorembed)
+    else:
+        await ctx.send("That is not a valid hexcode!")
+
+@bot.command(
     usage='p!help <command>',
     brief='Shows this menu.',
     description="Shows this menu.",
