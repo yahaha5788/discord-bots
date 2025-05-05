@@ -109,7 +109,9 @@ async def copycolor(ctx):
 
     hexcode = f"{role.color.value:06X}".upper()
 
-    await remove_supercolor(ctx.message.author, find_supercolor_role(ctx.message.author))
+    role = find_supercolor_role(ctx.message.author)
+    if role:
+        await remove_supercolor(ctx.message.author, role)
     await add_supercolor(ctx, bot, hexcode)
 
     colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has copied the color #{hexcode} from {get_name(target_user)}", color=int(hexcode, 16))
