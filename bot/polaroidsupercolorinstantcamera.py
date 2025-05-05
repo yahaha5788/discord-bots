@@ -3,6 +3,9 @@ import shlex
 from discord.ext import commands
 import discord.utils
 from typing import Optional
+
+from matplotlib.pyplot import title
+
 from bot.polaroidutils import *
 
 command_prefix = "p!"
@@ -179,6 +182,28 @@ async def enablecolor(ctx, hexcode: str):
             await ctx.send("You need admin permissions to disable colors! Ask an admin to run this command.")
     else:
         await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode.')
+
+@bot.command(
+    aliases=["roles", "colors"],
+    brief="A command to show every supercolor role in the server.",
+    usage="p!supercolors",
+    description="A command to show every supercolor role in the server."
+)
+async def supercolors(ctx):
+    guild: discord.Guild = ctx.guild
+    supercolor_roles: list[discord.Role] = []
+    for role in guild.roles:
+        if role.name.startswith("sc."):
+            supercolor_roles.append(role)
+    if supercolor_roles is not None:
+        desc = ""
+        for role in supercolor_roles:
+            role_hex = f"{role.color.value:06X}".upper()
+            desc += f"{role_hex}\n"
+        rolesembed = discord.Embed(title=f"Supercolor roles in {guild.name}", description=desc)
+        await ctx.send(embed=rolesembed)
+    else:
+        await ctx.send(f"There are no supercolor roles in {guild.name}. Use `p!supercolor <hexcode>` to make one!")
 
 @bot.command(
     usage='p!help <command>',
