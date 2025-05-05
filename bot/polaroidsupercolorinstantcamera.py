@@ -201,9 +201,13 @@ async def supercolors(ctx):
         desc = ""
         for role in supercolor_roles:
             role_hex = f"{role.color.value:06X}".upper()
+            members = role.members
             users = ""
-            for member in role.members:
-                users += f"{get_name(member)}, "
+            for member in members:
+                if members.index(member) == len(members) - 1:
+                    users += get_name(member)
+                else:
+                    users += f"{get_name(member)}, "
             desc += f"#{role_hex} - {users}\n"
         rolesembed = discord.Embed(title=f"Supercolor roles in {guild.name}", description=desc, color=EMBED_COLOR)
         await ctx.send(embed=rolesembed)
