@@ -314,7 +314,7 @@ def rgb_to_hsv(r, g, b):
     g /= 255
     b /= 255
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
-    return h * 360, s * 100, v * 100
+    return round(h * 360), round(s * 100), round(v * 100)
 
 def hsv_to_rgb(h, s, v):
     h /= 360
@@ -342,18 +342,24 @@ def convert_to(start_type: Literal["hex", "rgb", "hsv"], end_type: Literal["hex"
                 case "hsv":
                     return f"{hex_to_hsv(hex_r_h)}"
         case "rgb":
+            r = int(hex_r_h)
+            g = int(g_s)
+            b = int(b_v)
             match end_type:
                 case "hex":
-                    return rgb_to_hex(hex_r_h, g_s, b_v)
+                    return rgb_to_hex(r, g, b)
                 case "rgb":
-                    return f"({hex_r_h}, {g_s}, {b_v})"
+                    return f"({r}, {g}, {b})"
                 case "hsv":
-                    return f"{rgb_to_hsv(hex_r_h, g_s, b_v)}"
+                    return f"{rgb_to_hsv(r, g, b)}"
         case "hsv":
+            h = int(hex_r_h)
+            s = int(g_s)
+            v = int(b_v)
             match end_type:
                 case "hex":
-                    return hsv_to_hex(hex_r_h, g_s, b_v)
+                    return hsv_to_hex(h, s, v)
                 case "rgb":
-                    return f"{hsv_to_rgb(hex_r_h, g_s, b_v)}"
+                    return f"{hsv_to_rgb(h, s, v)}"
                 case "hsv":
-                    return f"({hex_r_h}, {g_s}, {b_v})"
+                    return f"({h}, {s}, {s})"
