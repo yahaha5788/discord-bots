@@ -239,10 +239,12 @@ async def convert(ctx, start_type, end_type, val_1, val_2, val_3):
         case "rgb":
             if not is_valid_rgb(val_1, val_2, val_3):
                 await ctx.send("That is not a valid RGB value.")
+                return
         case "hsv":
             if not is_valid_hsv(val_1, val_2, val_3):
                 await ctx.send("That is not a valid HSV value.")
-    convertembed = discord.Embed(title=f"Convert {start_type} to {end_type}", description=convert_to(start_type, end_type, val_1, val_2, val_3))
+                return
+    convertembed = discord.Embed(title=f"Convert {start_type} to {end_type}", description=f"Result: {convert_to(start_type, end_type, val_1, val_2, val_3)}", color=int(convert_to(start_type, "hex", val_1, val_2, val_3), 16))
     await ctx.send(embed=convertembed)
 
 @bot.command(

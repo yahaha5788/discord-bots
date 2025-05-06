@@ -45,8 +45,7 @@ def is_valid_rgb(r: float, g: float, b: float) -> bool:
     :param b: Blue
     :return: If the given rgb value is valid
     """
-
-    return (r in range(0, 256)) and (g in range(0, 256)) and (b in range(0, 256))
+    return (int(r) in range(0, 256)) and (int(g) in range(0, 256)) and (int(b) in range(0, 256))
 
 def is_valid_hsv(h: float, s: float, v: float) -> bool:
     """
@@ -56,7 +55,7 @@ def is_valid_hsv(h: float, s: float, v: float) -> bool:
     :param v: Value
     :return: If the given hsv value is valid
     """
-    return (h in range(0, 361)) and (s in range(0, 101)) and (v in range(0, 101))
+    return (int(h) in range(0, 361)) and (int(s) in range(0, 101)) and (int(v) in range(0, 101))
 
 def get_name(user) -> str:
     """
