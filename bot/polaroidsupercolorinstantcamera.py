@@ -227,7 +227,7 @@ async def showcolor(ctx, hexcode):
 
 @bot.command(
     brief="Converts rgb, hsv, or a hexcode into another form.",
-    description="Converts an rgb, hex, or hexcode value into another value of a different type.",
+    description="Converts an rgb, hex, or hexcode value into another value of a different type. Warning: conversions involving HSV values will be slightly off. This is because HSV values are not directly related to RGB and hex code values, and the results are rounded so they can be used",
     usage='p!convert <"hex" | "rgb" | "hsv"> <"hex" | "rgb" | "hsv"> <hexcode / r / h> <g / s> <b / v>'
 )
 async def convert(ctx, start_type, end_type, val_1, val_2, val_3):
