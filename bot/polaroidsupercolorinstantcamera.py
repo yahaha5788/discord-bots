@@ -4,8 +4,6 @@ from discord.ext import commands
 import discord.utils
 from typing import Optional
 
-from matplotlib.pyplot import title
-
 from bot.polaroidutils import *
 
 command_prefix = "p!"
@@ -226,6 +224,26 @@ async def showcolor(ctx, hexcode):
         await ctx.send(embed=colorembed)
     else:
         await ctx.send("That is not a valid hexcode!")
+
+@bot.command(
+    brief="Converts rgb, hsv, or a hexcode into another form.",
+    description="Converts an rgb, hex, or hexcode value into another value of a different type.",
+    usage='p!convert <"hex" | "rgb" | "hsv"> <"hex" | "rgb" | "hsv"> <hexcode / r / h> <g / s> <b / v>'
+)
+async def convert(ctx, start_type, end_type, val_1, val_2, val_3):
+    match start_type:
+        case "hex":
+            if not is_valid_hex(val_1):
+                await ctx.send("The given hex is not a valid hexcode.")
+                return
+        case "rgb":
+            if not is_valid_rgb(val_1, val_2, val_3):
+                await ctx.send("That is not a valid RGB value.")
+        case "hsv":
+            if not is_valid_hsv(val_1, val_2, val_3):
+                await ctx.send("That is not a valid HSV value.")
+    convertembed = discord.Embed(title=f"Convert {start_type} to {end_type}", description=convert_to(start_type, end_type, val_1, val_2, val_3))
+    await ctx.send(embed=convertembed)
 
 @bot.command(
     usage='p!help <command>',

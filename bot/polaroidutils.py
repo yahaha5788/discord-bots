@@ -1,5 +1,5 @@
 import math
-from typing import NamedTuple, Final
+from typing import NamedTuple, Final, Literal, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import colorsys
@@ -36,6 +36,27 @@ def is_valid_hex(hexcode: str) -> bool:
     """
 
     return bool(re.fullmatch(r"[0-9A-Fa-f]{6}", hexcode))
+
+def is_valid_rgb(r: float, g: float, b: float) -> bool:
+    """
+    Checks if a given rgb value is valid
+    :param r: Red
+    :param g: Green
+    :param b: Blue
+    :return: If the given rgb value is valid
+    """
+
+    return (r in range(0, 256)) and (g in range(0, 256)) and (b in range(0, 256))
+
+def is_valid_hsv(h: float, s: float, v: float) -> bool:
+    """
+    Checks if given hsv value is valid
+    :param h: Hue
+    :param s: Saturation
+    :param v: Value
+    :return: If the given hsv value is valid
+    """
+    return (h in range(0, 361)) and (s in range(0, 101)) and (v in range(0, 101))
 
 def get_name(user) -> str:
     """
@@ -282,6 +303,58 @@ def in_hue_range(base, ref, offset=3) -> bool:
     return abs(_fix_radians(base_rad - ref_rad)) < math.radians(offset)
 
 
+## -------------------------- EXTERNAL CONVERSION ONLY --------------------------------##
+def rgb_to_hex(r, g, b):
+    return '{:02X}{:02X}{:02X}'.format(int(r), int(g), int(b))
 
-# 00FFFF as test
-# 00FFFA is in range, 00FAAA is not
+def hex_to_rgb(hex_str):
+    return tuple(int(hex_str[i:i+2], 16) for i in (0, 2, 4))
+
+def rgb_to_hsv(r, g, b):
+    r /= 255
+    g /= 255
+    b /= 255
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    return h * 360, s * 100, v * 100
+
+def hsv_to_rgb(h, s, v):
+    h /= 360
+    s /= 100
+    v /= 100
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    return int(r * 255), int(g * 255), int(b * 255)
+
+def hex_to_hsv(hexcode) -> tuple[float, float, float]:
+    r, g, b = hex_to_rgb(hexcode)
+    return rgb_to_hsv(r, g, b)
+
+def hsv_to_hex(h, s, v) -> str:
+    r ,g, b = hsv_to_rgb(h ,s, v)
+    return rgb_to_hex(r, g, b)
+
+def convert_to(start_type: Literal["hex", "rgb", "hsv"], end_type: Literal["hex", "rgb", "hsv"], hex_r_h, g_s, b_v) -> str:
+    match start_type:
+        case "hex":
+            match end_type:
+                case "hex":
+                    return hex_r_h
+                case "rgb":
+                    return f"{hex_to_rgb(hex_r_h)}"
+                case "hsv":
+                    return f"{hex_to_hsv(hex_r_h)}"
+        case "rgb":
+            match end_type:
+                case "hex":
+                    return rgb_to_hex(hex_r_h, g_s, b_v)
+                case "rgb":
+                    return f"({hex_r_h}, {g_s}, {b_v})"
+                case "hsv":
+                    return f"{rgb_to_hsv(hex_r_h, g_s, b_v)}"
+        case "hsv":
+            match end_type:
+                case "hex":
+                    return hsv_to_hex(hex_r_h, g_s, b_v)
+                case "rgb":
+                    return f"{hsv_to_rgb(hex_r_h, g_s, b_v)}"
+                case "hsv":
+                    return f"({hex_r_h}, {g_s}, {b_v})"
