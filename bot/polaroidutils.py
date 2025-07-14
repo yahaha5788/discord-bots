@@ -1,4 +1,6 @@
+import json
 import math
+import os
 from typing import NamedTuple, Final, Literal, Optional
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,6 +9,7 @@ import discord
 from discord.ext.commands import MissingPermissions, Bot
 import re
 
+FAVORITE: Final[str] = "favorite.json"
 GOLD: Final[str] = 'BBA53D'
 EMBED_COLOR: Final[int] = int(GOLD, 16)
 
@@ -363,3 +366,13 @@ def convert_to(start_type: Literal["hex", "rgb", "hsv"], end_type: Literal["hex"
                     return f"{hsv_to_rgb(h, s, v)}"
                 case "hsv":
                     return f"({h}, {s}, {s})"
+
+def load_favorite(): # load file
+    if os.path.exists(FAVORITE):
+        with open(FAVORITE, "r") as c:
+            return json.load(c)
+    return {}
+
+def write_favorite(data): # write to file
+    with open(FAVORITE, "w") as f:
+        json.dump(data, f, indent=4)

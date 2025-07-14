@@ -17,9 +17,19 @@ bot = commands.Bot(command_prefix=command_prefix, intents=intents, activity=acti
 
 @bot.command(aliases=['sc'],
              usage="p!supercolor <hexcode>",
-             description="Uses user input of a 6-character hex code to create a role with that color and add it to the user.",
+             description="Uses user input of a 6-character hex code to create a role with that color and add it to the user OR type favorite if you have set a favorite color, and use that.",
              brief="Changes nickname color using a hex code input")
 async def supercolor(ctx, hexcode: str = None):
+
+    if hexcode.lower() == "favorite": # if user types "favorite" instead of hexcode set hexcode to user's favorite or return
+        favorites = load_favorite()
+        mem_id = str(ctx.author.id)
+        if favorites.get(mem_id):
+            hexcode = favorites[mem_id]
+        else:
+            await ctx.send("You do not have a set favorite color.")
+            return
+
     hexcode = hexcode.upper()
     if is_valid_hex(hexcode):
         for c in disabled_colors:
@@ -38,8 +48,9 @@ async def supercolor(ctx, hexcode: str = None):
         colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has been given the color #{hexcode}.", color=int(hexcode, 16))
         set_footer(colorembed)
         await ctx.send(embed=colorembed)
+
     else:
-        await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode and type "p!help supercolor" for info on the command syntax')
+        await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode and type "p!help supercolor" for info on the command syntax.')
         
 @bot.command(aliases=['cc'],
              usage="p!clearcolor",
@@ -268,6 +279,23 @@ async def help(ctx, command: Optional[str] = None):
 
     set_footer(helpembed)
     await ctx.send(embed=helpembed)
+
+@bot.command(
+    usage="p!favorite <hexcode>",
+    description="Favorite a selected hexcode, and call `p!supercolor favorite` to use it easily. Carries over between servers.",
+    brief="Favorite a given hexcode to use later."
+)
+async def favorite(ctx, hexcode: str):
+    if is_valid_hex(hexcode):
+        author: discord.Member = ctx.author
+        mem_id = str(author.id)
+        favorites = load_favorite()
+        favorites[mem_id] = hexcode.upper()
+        write_favorite(favorites)
+        embed = discord.Embed(title="*Click!*", description=f"{get_name(ctx.message.author)} has set #{hexcode} as their favorite color.", color=int(hexcode, 16))
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send('Invalid hexcode. Make sure your input is a valid hexcode and type "p!help favorite" for info on the command syntax')
 
 # @bot.command()
 # async def say(ctx, content):
