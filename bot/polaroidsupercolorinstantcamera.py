@@ -205,9 +205,13 @@ async def supercolors(ctx):
     supercolor_roles: list[discord.Role] = []
     for role in guild.roles:
         if role.name.startswith("sc."):
-            supercolor_roles.append(role)
+            if len(role.members) == 0:
+                await role.delete() # delete role if no members, else add role to list of supercolors
+            else:
+                supercolor_roles.append(role)
     if supercolor_roles is not None:
         desc = ""
+
         for role in supercolor_roles:
             role_hex = f"{role.color.value:06X}".upper()
             members = role.members
@@ -282,11 +286,19 @@ async def help(ctx, command: Optional[str] = None):
 
 @bot.command(
     usage="p!favorite <hexcode>",
-    description="Favorite a selected hexcode, and call `p!supercolor favorite` to use it easily. Carries over between servers.",
+    description="Favorite a selected hexcode, and call `p!supercolor favorite` to use it easily. Carries over between servers. call p!favorite without an input to see your favorite color",
     brief="Favorite a given hexcode to use later."
 )
-async def favorite(ctx, hexcode: str):
-    if is_valid_hex(hexcode):
+async def favorite(ctx, hexcode: str = ""):
+    if hexcode == "":
+        favorites = load_favorite()
+        try:
+            hexcode = favorites[str(ctx.author.id)]
+            embed = discord.Embed(title="*Click!*", description=f"{get_name(ctx.message.author)}'s favorite color is #{hexcode}.", color=int(hexcode, 16))
+            await ctx.send(embed=embed)
+        except KeyError as e:
+            await ctx.send("You do not have a favorite color set. use p!favorite <hexcode> to set one!")
+    elif is_valid_hex(hexcode):
         author: discord.Member = ctx.author
         mem_id = str(author.id)
         favorites = load_favorite()
