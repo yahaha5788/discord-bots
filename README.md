@@ -1,8 +1,18 @@
-# PolaroidSupercolorInstantCamera
-### A bot for infinitely customizable color roles!
+Harold is a Discord bot for tracking and getting the statistics of First Tech Challenge teams.
+##### This is very much a WIP. Although most commands work, there are still many to be made and polished.
 
-The Polaroid is a discord bot made for color roles. It allows for any user to have their own custom username color through a role (ex. sc.00FFFF), as well as copying other users' supercolors and a command to show their own
+## Planned
 
-It also allows for server admins to disable / enable colors of some colors are reserved for certain roles. Colors in a range from that color are also disabled to avoid users slightly changing a hexcode as a workaround
+Event creation for worlds and states events\
+Event creation for upcoming events of followed teams\
+Automatic updating of followed teams (`updatesLoop.py`)\
+`/recentmatches` - get the team's last or most recent match\
+`/customstat` - query for specific stats of a team in a specific time period\
+`/compareteams` - compare two teams\
+`/setstates` - event creation and updating for a state event\
+`/trivia` - trivia about FIRST idk
 
-The Polaroid also has commands for showing a given color, and conversion supporting hexcodes, rgb values, and hsv values.
+Wrap all commands on start (associate name, usage, and other variables that are given via `@commandattrs` and aren't in normal app commands) instead of every time `/help` is run for optimization
+
+Work on condesing the /worlds command to allow for showing matches without sending the ***ONE EMBED TO RULE THEM ALL***, possibly
+splitting into `/worlds <division> <data>` in which `<data>` is "matches" or "teams"
