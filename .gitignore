@@ -1,4 +1,5 @@
-/data/
-/bot/polaroid.log
 /bot/keys.env
+/bot/polaroid.log
 /bot/harold.log
+/data/
+/bot/favorite.json

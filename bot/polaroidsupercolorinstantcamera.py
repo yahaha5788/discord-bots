@@ -1,8 +1,10 @@
+import shlex
+
 from discord.ext import commands
 import discord.utils
 from typing import Optional
-from misc.polaroidutils import *
-from misc.config import EMBED_COLOR
+
+from bot.polaroidutils import *
 
 command_prefix = "p!"
 activity = discord.Game(name="with colors")
@@ -15,9 +17,19 @@ bot = commands.Bot(command_prefix=command_prefix, intents=intents, activity=acti
 
 @bot.command(aliases=['sc'],
              usage="p!supercolor <hexcode>",
-             description="Uses user input of a 6-character hex code to create a role with that color and add it to the user.",
+             description="Uses user input of a 6-character hex code to create a role with that color and add it to the user OR type favorite if you have set a favorite color, and use that.",
              brief="Changes nickname color using a hex code input")
 async def supercolor(ctx, hexcode: str = None):
+
+    if hexcode.lower() == "favorite": # if user types "favorite" instead of hexcode set hexcode to user's favorite or return
+        favorites = load_favorite()
+        mem_id = str(ctx.author.id)
+        if favorites.get(mem_id):
+            hexcode = favorites[mem_id]
+        else:
+            await ctx.send("You do not have a set favorite color.")
+            return
+
     hexcode = hexcode.upper()
     if is_valid_hex(hexcode):
         for c in disabled_colors:
@@ -33,11 +45,12 @@ async def supercolor(ctx, hexcode: str = None):
             
         await add_supercolor(ctx, bot, hexcode)
 
-        colorembed = discord.Embed(title='*Click!*', description=f"You have been given the color #{hexcode}.", color=int(hexcode, 16))
+        colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has been given the color #{hexcode}.", color=int(hexcode, 16))
         set_footer(colorembed)
         await ctx.send(embed=colorembed)
+
     else:
-        await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode and type "p!help supercolor" for info on the command syntax')
+        await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode and type "p!help supercolor" for info on the command syntax.')
         
 @bot.command(aliases=['cc'],
              usage="p!clearcolor",
@@ -47,7 +60,7 @@ async def clearcolor(ctx):
     role = find_supercolor_role(ctx.message.author)
     if role:
         await remove_supercolor(ctx.message.author, role)
-        clearembed = discord.Embed(title='*Click!*', description='Your color role has been removed')
+        clearembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)}'s color role has been removed.")
         set_footer(clearembed)
         await ctx.send(embed=clearembed)
     else: 
@@ -77,42 +90,79 @@ async def currentcolor(ctx):
             
 @bot.command(
     aliases=['copy'],
-    usage='p!copycolor <user>',
-    description="Copies a user's current color role.",
+    usage='p!copycolor (as a reply)',
+    description="Copies a user's current color role by replying to their message.",
     brief="Copies a user's current color role."
 )
-async def copycolor(ctx, user: discord.User):
-    user = ctx.guild.get_member(user.id)
+async def copycolor(ctx):
+    if not ctx.message.reference:
+        await ctx.send("Reply to a user's message to copy their color.")
+        return
 
-    if user:
-        role = find_supercolor_role(user)
-        if not role:
-            await ctx.send("That user does not have a color role.")
-            return
+    try:
+        replied_message = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+        target_user = replied_message.author
+    except Exception:
+        await ctx.send("Couldn't find the user from the replied message.")
+        return
 
-        hexcode = f"{role.color.value:06X}"
-        hexcode = hexcode.upper()
+    member = ctx.guild.get_member(target_user.id)
+    if not member:
+        await ctx.send("That user is not in this server.")
+        return
 
-        await remove_supercolor(user, role)
-        await add_supercolor(ctx, bot, hexcode)
-        colorembed = discord.Embed(title='*Click!*', description=f"You have been given the color #{hexcode}.", color=int(hexcode, 16))
-        set_footer(colorembed)
-        await ctx.send(embed=colorembed)
+    role = find_supercolor_role(member)
+    if not role:
+        await ctx.send("That user does not have a color role.")
+        return
 
-    else:
-        await ctx.send("That user does not exist!")
+    hexcode = f"{role.color.value:06X}".upper()
+
+    role = find_supercolor_role(ctx.message.author)
+    if role:
+        await remove_supercolor(ctx.message.author, role)
+    await add_supercolor(ctx, bot, hexcode)
+
+    colorembed = discord.Embed(title='*Click!*', description=f"{get_name(ctx.message.author)} has copied the color #{hexcode} from {get_name(target_user)}", color=int(hexcode, 16))
+    set_footer(colorembed)
+    await ctx.send(embed=colorembed)
+
 
 @bot.command(
-    aliases=['whitelist', 'disable'],
+    aliases=['disable'],
     brief="An admin command that disables a certain color.",
-    usage='p!disablecolor <hexcode>',
-    description='An admin command that disables a certain color as well as ones around it to preserve the meaning of certain colors.'
+    usage='p!disablecolor <hexcode> <"exempt role name">',
+    description='An admin command that disables a certain color. Names of roles can be passed it in the format `"role name"` to define roles that are allowed to use the color.'
 )
-async def disablecolor(ctx, hexcode: str, *exempt_roles: discord.Role):
+async def disablecolor(ctx, hexcode: str, *, exempt_roles: str = None):
     hexcode = hexcode.upper()
     if is_valid_hex(hexcode):
+        if exempt_roles:
+            exempt_roles = shlex.split(exempt_roles)
+        else: exempt_roles = []
+
         try:
-            await disable_color(ctx, hexcode, [role.id for role in exempt_roles])
+            roles = [role for role in ctx.guild.roles if role.name in exempt_roles]
+            if len(roles) < len(exempt_roles):
+                await ctx.send("One or more specified roles were not found. Would you still like to run the command?")
+                proceed = await get_proceed_input(str, ctx, bot)
+                if proceed.lower() == 'yes':
+                    await disable_color(ctx, hexcode, [role.id for role in roles])
+                else:
+                    await ctx.send("Stopping the command.")
+                    return
+
+            elif len(roles) > len(exempt_roles):
+                await ctx.send("Multiple roles have been found from one or more given names. Would you still like to run the command?")
+                proceed = await get_proceed_input(str, ctx, bot)
+                if proceed.lower() == 'yes':
+                    await disable_color(ctx, hexcode, [role.id for role in roles])
+                else:
+                    await ctx.send("Stopping the command.")
+                    return
+
+            else:
+                await disable_color(ctx, hexcode, [role.id for role in roles])
 
             colorembed = discord.Embed(title='*Click!*', description=f"The color role #{hexcode} has been disabled.", color=int(hexcode, 16))
             set_footer(colorembed)
@@ -121,6 +171,96 @@ async def disablecolor(ctx, hexcode: str, *exempt_roles: discord.Role):
             await ctx.send("You need admin permissions to disable colors! Ask an admin to run this command.")
     else:
         await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode.')
+
+@bot.command(
+    aliases=['enable'],
+    brief="An admin command that enables a disabled color.",
+    usage='p!enablecolor <hexcode>',
+    description='An admin command that enables a previously disabled color.'
+)
+async def enablecolor(ctx, hexcode: str):
+    hexcode = hexcode.upper()
+    if is_valid_hex(hexcode):
+        try:
+            enable = await enable_color(ctx, hexcode)
+            if enable:
+                colorembed = discord.Embed(title='*Click!*', description=f"The color role #{hexcode} has been enabled.", color=int(hexcode, 16))
+                set_footer(colorembed)
+                await ctx.send(embed=colorembed)
+            else:
+                await ctx.send("That color is already enabled!")
+        except MissingPermissions:
+            await ctx.send("You need admin permissions to disable colors! Ask an admin to run this command.")
+    else:
+        await ctx.send('Invalid hexcode or input. Make sure your input is a valid hexcode.')
+
+@bot.command(
+    aliases=["roles", "colors"],
+    brief="A command to show every supercolor role in the server.",
+    usage="p!supercolors",
+    description="A command to show every supercolor role in the server."
+)
+async def supercolors(ctx):
+    guild: discord.Guild = ctx.guild
+    supercolor_roles: list[discord.Role] = []
+    for role in guild.roles:
+        if role.name.startswith("sc."):
+            if len(role.members) == 0:
+                await role.delete() # delete role if no members, else add role to list of supercolors
+            else:
+                supercolor_roles.append(role)
+    if supercolor_roles is not None:
+        desc = ""
+
+        for role in supercolor_roles:
+            role_hex = f"{role.color.value:06X}".upper()
+            members = role.members
+            users = ""
+            for member in members:
+                if members.index(member) == len(members) - 1:
+                    users += get_name(member)
+                else:
+                    users += f"{get_name(member)}, "
+            desc += f"#{role_hex} - {users}\n"
+        rolesembed = discord.Embed(title=f"Supercolor roles in {guild.name}", description=desc, color=EMBED_COLOR)
+        await ctx.send(embed=rolesembed)
+    else:
+        await ctx.send(f"There are no supercolor roles in {guild.name}. Use `p!supercolor <hexcode>` to make one!")
+
+@bot.command(
+    aliases=['color'],
+    brief="Sends on embed with a color",
+    usage="p!showcolor <hexcode>",
+    description="Sends an embed with the given color and a copy/paste command"
+)
+async def showcolor(ctx, hexcode):
+    if is_valid_hex(hexcode):
+        colorembed = discord.Embed(title=f"#{hexcode}", description=f"`p!supercolor {hexcode}`", color=int(hexcode, 16))
+        await ctx.send(embed=colorembed)
+    else:
+        await ctx.send("That is not a valid hexcode!")
+
+@bot.command(
+    brief="Converts rgb, hsv, or a hexcode into another form.",
+    description="Converts an rgb, hex, or hexcode value into another value of a different type. Warning: conversions involving HSV values will be slightly off. This is because HSV values are not directly related to RGB and hex code values, and the results are rounded so they can be used",
+    usage='p!convert <"hex" | "rgb" | "hsv"> <"hex" | "rgb" | "hsv"> <hexcode / r / h> <g / s> <b / v>'
+)
+async def convert(ctx, start_type, end_type, val_1, val_2=None, val_3=None):
+    match start_type:
+        case "hex":
+            if not is_valid_hex(val_1):
+                await ctx.send("The given hex is not a valid hexcode.")
+                return
+        case "rgb":
+            if not is_valid_rgb(val_1, val_2, val_3):
+                await ctx.send("That is not a valid RGB value.")
+                return
+        case "hsv":
+            if not is_valid_hsv(val_1, val_2, val_3):
+                await ctx.send("That is not a valid HSV value.")
+                return
+    convertembed = discord.Embed(title=f"Convert {start_type} to {end_type}", description=f"Result: {convert_to(start_type, end_type, val_1, val_2, val_3)}", color=int(convert_to(start_type, "hex", val_1, val_2, val_3), 16))
+    await ctx.send(embed=convertembed)
 
 @bot.command(
     usage='p!help <command>',
@@ -143,3 +283,32 @@ async def help(ctx, command: Optional[str] = None):
 
     set_footer(helpembed)
     await ctx.send(embed=helpembed)
+
+@bot.command(
+    usage="p!favorite <hexcode>",
+    description="Favorite a selected hexcode, and call `p!supercolor favorite` to use it easily. Carries over between servers. call p!favorite without an input to see your favorite color",
+    brief="Favorite a given hexcode to use later."
+)
+async def favorite(ctx, hexcode: str = ""):
+    if hexcode == "":
+        favorites = load_favorite()
+        try:
+            hexcode = favorites[str(ctx.author.id)]
+            embed = discord.Embed(title="*Click!*", description=f"{get_name(ctx.message.author)}'s favorite color is #{hexcode}.", color=int(hexcode, 16))
+            await ctx.send(embed=embed)
+        except KeyError as e:
+            await ctx.send("You do not have a favorite color set. use p!favorite <hexcode> to set one!")
+    elif is_valid_hex(hexcode):
+        author: discord.Member = ctx.author
+        mem_id = str(author.id)
+        favorites = load_favorite()
+        favorites[mem_id] = hexcode.upper()
+        write_favorite(favorites)
+        embed = discord.Embed(title="*Click!*", description=f"{get_name(ctx.message.author)} has set #{hexcode} as their favorite color.", color=int(hexcode, 16))
+        await ctx.send(embed=embed)
+    else:
+        await ctx.send('Invalid hexcode. Make sure your input is a valid hexcode and type "p!help favorite" for info on the command syntax')
+
+# @bot.command()
+# async def say(ctx, content):
+#     await ctx.send(content)

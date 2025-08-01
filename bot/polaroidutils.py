@@ -1,11 +1,17 @@
+import json
 import math
-from typing import NamedTuple
+import os
+from typing import NamedTuple, Final, Literal, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import colorsys
 import discord
 from discord.ext.commands import MissingPermissions, Bot
 import re
+
+FAVORITE: Final[str] = "favorite.json"
+GOLD: Final[str] = 'BBA53D'
+EMBED_COLOR: Final[int] = int(GOLD, 16)
 
 class DisabledColor(NamedTuple):
     hex: str
@@ -34,6 +40,26 @@ def is_valid_hex(hexcode: str) -> bool:
 
     return bool(re.fullmatch(r"[0-9A-Fa-f]{6}", hexcode))
 
+def is_valid_rgb(r: float, g: float, b: float) -> bool:
+    """
+    Checks if a given rgb value is valid
+    :param r: Red
+    :param g: Green
+    :param b: Blue
+    :return: If the given rgb value is valid
+    """
+    return (int(r) in range(0, 256)) and (int(g) in range(0, 256)) and (int(b) in range(0, 256))
+
+def is_valid_hsv(h: float, s: float, v: float) -> bool:
+    """
+    Checks if given hsv value is valid
+    :param h: Hue
+    :param s: Saturation
+    :param v: Value
+    :return: If the given hsv value is valid
+    """
+    return (int(h) in range(0, 361)) and (int(s) in range(0, 101)) and (int(v) in range(0, 101))
+
 def get_name(user) -> str:
     """
     Gets the display or nickname for a user (used only in currentcolor).
@@ -56,6 +82,9 @@ def find_supercolor_role(user):
 
 def _check(ctx):
     return lambda m: m.author == ctx.author and m.channel == ctx.channel  # if message sent is the same channel & author as the original message
+
+def _check_proceed(ctx):
+    return lambda m: (m.author == ctx.author) and (m.channel == ctx.channel) and (m.content.lower() in ['yes', 'no'])
 
 def set_footer(embed: discord.Embed) -> None:
     """
@@ -125,7 +154,7 @@ def plot_color_range(center_hex, offset=3) -> None:
 
 # --------------------------- ASYNC DEF ------------------------------#
 
-async def get_input_of_type(msg_type, ctx, bot):
+async def get_input_of_type(msg_type, ctx, bot: discord.ext.commands.Bot):
     """
     Was used for selecting a user for copycolor. Might be used later for supercolor in saving roles by finding similar colors
     and using a second input.
@@ -136,11 +165,28 @@ async def get_input_of_type(msg_type, ctx, bot):
     """
     while True:
         try:
-            msg = await bot.wait_for('message', check=_check(ctx))
+            msg = await bot.wait_for('message', check=_check(ctx), timeout=30)
             return msg_type(msg.content)
         except ValueError:
             ctx.send(f"Please enter a {msg_type}") # this might say something like builtins.str but idk
             continue                               # i'll fix it if it comes up but for now it's fine
+
+async def get_proceed_input(msg_type, ctx, bot: discord.ext.commands.Bot):
+    """
+    Was used for selecting a user for copycolor. Might be used later for supercolor in saving roles by finding similar colors
+    and using a second input.
+    :param msg_type: The type of input
+    :param ctx: The context, passed in from the command
+    :param bot: The bot, obviously
+    :return: The message, if it is the correct type
+    """
+    while True:
+        try:
+            msg = await bot.wait_for('message', check=_check_proceed(ctx), timeout=30)
+            return msg_type(msg.content)
+        except ValueError:
+            ctx.send(f"Please enter yes/no.") # this might say something like builtins.str but idk
+            continue
 
 async def remove_supercolor(user, role) -> None:
     """
@@ -173,21 +219,45 @@ async def add_supercolor(ctx, bot: Bot, hexcode) -> None:
 
     await user.add_roles(role)
 
-async def disable_color(ctx, hexcode: str, allowed_roles: list[int]) -> None:
+async def disable_color(ctx, hexcode: str, allowed_roles: list[int]) -> bool:
     """
     Disables a given color from a hexcode, as well as a range of similar colors around it.
     :param ctx: The context, passed in from the command
     :param hexcode: The hexcode to disable
     :param allowed_roles: Any roles taken as *exempt_roles. These roles are exemple from the effect and can still use the color normally
+    :return: True if the color has been disabled, or False if the color was already disabled
     :raise MissingPermissions: If the command user is not an administrator.
     """
     if ctx.message.author.guild_permissions.administrator:
-        disabled_colors.append(DisabledColor(hexcode, allowed_roles))
-        role = await discord.utils.get(ctx.guild.roles, name=_current_role_name(hexcode))
+        color = DisabledColor(hexcode, allowed_roles)
+        if color in disabled_colors:
+            return False
+
+        disabled_colors.append(color)
+        role: discord.Role = discord.utils.get(ctx.guild.roles, name=_current_role_name(hexcode))
         if role:
             await role.delete()
+            return True
     else:
         raise MissingPermissions(["Administrator"])
+
+async def enable_color(ctx, hexcode: str) -> bool:
+    """
+    Enables a certain color.
+    :param ctx: The context, passed in from the command
+    :param hexcode: The hexcode to enable
+    :return: True if the color has been enabled, or False if the color was never disabled
+    :raise MissingPermissions: If the command user is not an administrator.
+    """
+    if ctx.message.author.guild_permissions.administrator:
+        for color in disabled_colors:
+            if color.hex == hexcode:
+                disabled_colors.remove(color)
+                return True
+        return False
+    else:
+        raise MissingPermissions(["Administrator"])
+
 
 def _get_color_at_angle(base_hex, offset_deg) -> str:
     """
@@ -235,6 +305,74 @@ def in_hue_range(base, ref, offset=3) -> bool:
     return abs(_fix_radians(base_rad - ref_rad)) < math.radians(offset)
 
 
+## -------------------------- EXTERNAL CONVERSION ONLY --------------------------------##
+def rgb_to_hex(r, g, b):
+    return '{:02X}{:02X}{:02X}'.format(int(r), int(g), int(b))
 
-# 00FFFF as test
-# 00FFFA is in range, 00FAAA is not
+def hex_to_rgb(hex_str):
+    return tuple(int(hex_str[i:i+2], 16) for i in (0, 2, 4))
+
+def rgb_to_hsv(r, g, b):
+    r /= 255
+    g /= 255
+    b /= 255
+    h, s, v = colorsys.rgb_to_hsv(r, g, b)
+    return round(h * 360), round(s * 100), round(v * 100)
+
+def hsv_to_rgb(h, s, v):
+    h /= 360
+    s /= 100
+    v /= 100
+    r, g, b = colorsys.hsv_to_rgb(h, s, v)
+    return int(r * 255), int(g * 255), int(b * 255)
+
+def hex_to_hsv(hexcode) -> tuple[float, float, float]:
+    r, g, b = hex_to_rgb(hexcode)
+    return rgb_to_hsv(r, g, b)
+
+def hsv_to_hex(h, s, v) -> str:
+    r ,g, b = hsv_to_rgb(h ,s, v)
+    return rgb_to_hex(r, g, b)
+
+def convert_to(start_type: Literal["hex", "rgb", "hsv"], end_type: Literal["hex", "rgb", "hsv"], hex_r_h, g_s, b_v) -> str:
+    match start_type:
+        case "hex":
+            match end_type:
+                case "hex":
+                    return hex_r_h
+                case "rgb":
+                    return f"{hex_to_rgb(hex_r_h)}"
+                case "hsv":
+                    return f"{hex_to_hsv(hex_r_h)}"
+        case "rgb":
+            r = int(hex_r_h)
+            g = int(g_s)
+            b = int(b_v)
+            match end_type:
+                case "hex":
+                    return rgb_to_hex(r, g, b)
+                case "rgb":
+                    return f"({r}, {g}, {b})"
+                case "hsv":
+                    return f"{rgb_to_hsv(r, g, b)}"
+        case "hsv":
+            h = int(hex_r_h)
+            s = int(g_s)
+            v = int(b_v)
+            match end_type:
+                case "hex":
+                    return hsv_to_hex(h, s, v)
+                case "rgb":
+                    return f"{hsv_to_rgb(h, s, v)}"
+                case "hsv":
+                    return f"({h}, {s}, {s})"
+
+def load_favorite(): # load file
+    if os.path.exists(FAVORITE):
+        with open(FAVORITE, "r") as c:
+            return json.load(c)
+    return {}
+
+def write_favorite(data): # write to file
+    with open(FAVORITE, "w") as f:
+        json.dump(data, f, indent=4)
