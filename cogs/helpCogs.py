@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 from discord import ButtonStyle
 
-from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gatherAppCommands, addAppCommand, commandAttrs, \
-    CategorizedAppCommand, sortCategoryCommands, sortAllCommands, setFooter
-from misc.templates import formatUsage
+from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gather_app_commands, add_app_command, commandattrs, \
+    CategorizedAppCommand, sort_category_commands, sort_all_commands, set_footer
+from misc.templates import format_usage
 
 
 class HelpCog(commands.Cog):
@@ -13,8 +13,8 @@ class HelpCog(commands.Cog):
         self.commands = [CategorizedAppCommand(command) for command in self.bot.tree.get_commands()]
 
     async def cog_load(self) -> None:
-        addAppCommand(self.bot)(self.help)
-        addAppCommand(self.bot)(self.intro)
+        add_app_command(self.bot)(self.help)
+        add_app_command(self.bot)(self.intro)
 
     async def allHelp(self, interaction: discord.Interaction):
         current_page = discord.Embed(
@@ -26,7 +26,7 @@ class HelpCog(commands.Cog):
         pages = []
         current_length = 0
 
-        cmd_dict = sortAllCommands(self.commands)
+        cmd_dict = sort_all_commands(self.commands)
 
         for category, command_list in cmd_dict.items():
             category_commands: str = ''
@@ -36,7 +36,7 @@ class HelpCog(commands.Cog):
                 category_commands = category_commands + f"{cmd_name}: {cmd_desc}\n"
 
             if current_length + len(category) + len(category_commands) > CHARACTER_LIMIT:
-                setFooter(current_page)
+                set_footer(current_page)
                 pages.append(current_page)
                 current_page = discord.Embed(
                     title="Help Menu",
@@ -48,7 +48,7 @@ class HelpCog(commands.Cog):
             current_page.add_field(name=category, value=category_commands, inline=False)
             current_length += len(category) + len(category_commands)
 
-        setFooter(current_page)
+        set_footer(current_page)
         pages.append(current_page)
 
         current_index = 0
@@ -84,11 +84,11 @@ class HelpCog(commands.Cog):
 
         help_embed.description = command.description
 
-        name, value = formatUsage(command.usage, command.param_guide)
+        name, value = format_usage(command.usage, command.param_guide)
 
         help_embed.add_field(name=name, value=value, inline=False)
 
-        setFooter(help_embed)
+        set_footer(help_embed)
 
         await interaction.response.send_message(embed=help_embed)
 
@@ -109,7 +109,7 @@ class HelpCog(commands.Cog):
             field_text = f"{cmd_desc}\n{cmd_usage}\n"
 
             if current_length + len(cmd_name) + len(field_text) > CHARACTER_LIMIT:
-                setFooter(current_page)
+                set_footer(current_page)
                 pages.append(current_page)
                 current_page = discord.Embed(title=f"Help: {category}", color=EMBED_COLOR)
                 current_length = 0
@@ -117,7 +117,7 @@ class HelpCog(commands.Cog):
             current_page.add_field(name=cmd_name, value=field_text, inline=False)
             current_length += len(cmd_name) + len(field_text)
 
-        setFooter(current_page)
+        set_footer(current_page)
         pages.append(current_page)
 
         current_index = 0
@@ -147,7 +147,7 @@ class HelpCog(commands.Cog):
 
         await interaction.response.send_message(embed=pages[current_index], view=help_view)
 
-    @commandAttrs(
+    @commandattrs(
         name='help',
         description='Help command. Shows this command.',
         brief="Help command. Shows this command.",
@@ -159,9 +159,9 @@ class HelpCog(commands.Cog):
     )
     async def help(self, interaction: discord.Interaction, keyword: str = None):
         if keyword:
-            commands_to_show, help_type, category = gatherAppCommands(self.commands, keyword)
+            commands_to_show, help_type, category = gather_app_commands(self.commands, keyword)
             if help_type == 'category':
-                commands_to_show = sortCategoryCommands(commands_to_show)
+                commands_to_show = sort_category_commands(commands_to_show)
                 await self.categoryHelp(interaction, commands_to_show, category)
             elif help_type == 'command':
                 await self.commandHelp(interaction, commands_to_show[0])
@@ -170,7 +170,7 @@ class HelpCog(commands.Cog):
         else:
             await self.allHelp(interaction)
 
-    @commandAttrs(
+    @commandattrs(
         name='intro',
         description='Intro command for new users.',
         brief='Introduction command.',

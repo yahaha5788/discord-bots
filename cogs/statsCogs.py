@@ -3,8 +3,8 @@ from discord.ext import commands
 
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, setFooter, commandAttrs, addAppCommand
-from misc.templates import qStatsTemplate, addSponsors
+from misc.config import EMBED_COLOR, set_footer, commandattrs, add_app_command
+from misc.templates import quickstats_template, add_sponsors
 
 
 class StatsCog(commands.Cog):
@@ -12,12 +12,12 @@ class StatsCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        addAppCommand(self.bot)(self.quickstats)
+        add_app_command(self.bot)(self.quickstats)
         # (addAppCommand(self.bot)(self.customstat)
         # (addAppCommand(self.bot)(self.recentmatches)
         # (addAppCommand(self.bot)(self.compareteams)
 
-    @commandAttrs(
+    @commandattrs(
         category='Stats',
         usage=f"/quickstats <number>",
         brief="Gets the quickstats of a team.",
@@ -28,7 +28,7 @@ class StatsCog(commands.Cog):
         name='quickstats'
     )
     async def quickstats(self, interaction: discord.Interaction, number: int):
-        data, success = queries.teamQuickStats(str(number))
+        data, success = queries.team_quickstats(str(number))
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
             await interaction.response.send_message(embed=embed)
@@ -39,14 +39,14 @@ class StatsCog(commands.Cog):
         auto, tele, endgame, np = qstats
         qstats_embed: discord.Embed = discord.Embed(title=title, color=EMBED_COLOR)
 
-        name, val = qStatsTemplate(auto, tele, endgame, np)
+        name, val = quickstats_template(auto, tele, endgame, np)
         qstats_embed.add_field(name=name, value=val, inline=False)
 
-        setFooter(qstats_embed)
+        set_footer(qstats_embed)
 
         await interaction.response.send_message(embed=qstats_embed)
 
-    @commandAttrs(
+    @commandattrs(
         category='Stats',
         description='NOT IMPLEMENTED',
         brief="NOT IMPLEMENTED",
@@ -63,7 +63,7 @@ class StatsCog(commands.Cog):
         raise NotImplementedError() # TODO: IMPLEMENT
         # wow really? i couldn't tell that this needs to be implemented
 
-    @commandAttrs(
+    @commandattrs(
         category='Stats',
         description='NOT IMPLEMENTED',
         brief="NOT IMPLEMENTED",
@@ -77,7 +77,7 @@ class StatsCog(commands.Cog):
     async def compareteams(self, interaction: discord.Interaction, team_number_1: int, team_number_2: int):
         raise NotImplementedError() # TODO: IMPLEMENT
 
-    @commandAttrs(
+    @commandattrs(
         category='Stats',
         description='NOT IMPLEMENTED',
         brief="NOT IMPLEMENTED",
@@ -95,9 +95,9 @@ class InfoCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        addAppCommand(self.bot)(self.teaminfo)
+        add_app_command(self.bot)(self.teaminfo)
 
-    @commandAttrs(
+    @commandattrs(
         category='Info',
         usage=f"/teaminfo <number>",
         brief="Gets information on a team",
@@ -108,7 +108,7 @@ class InfoCog(commands.Cog):
         name='teaminfo'
     )
     async def teaminfo(self, interaction: discord.Interaction, number: int):
-        data, success = queries.teamLogistics(str(number))
+        data, success = queries.team_logistics(str(number))
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
             await interaction.response.send_message(embed=embed)
@@ -124,9 +124,9 @@ class InfoCog(commands.Cog):
     Website: {data.website}
     Sponsors:
     """
-        desc = addSponsors(data.sponsors, desc)
+        desc = add_sponsors(data.sponsors, desc)
 
         info_embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
-        setFooter(info_embed)
+        set_footer(info_embed)
 
         await interaction.response.send_message(embed=info_embed)

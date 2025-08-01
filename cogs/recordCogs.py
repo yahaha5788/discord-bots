@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from query_stuff import queries
 from misc.templates import *
-from misc.config import setFooter, EMBED_COLOR, commandAttrs, addAppCommand
+from misc.config import set_footer, EMBED_COLOR, commandattrs, add_app_command
 
 
 class RecordCog(commands.Cog):
@@ -10,10 +10,10 @@ class RecordCog(commands.Cog):
         self.bot = bot
 
     async def cog_load(self) -> None:
-        addAppCommand(self.bot)(self.worldrecord)
-        addAppCommand(self.bot)(self.bestteam)
+        add_app_command(self.bot)(self.worldrecord)
+        add_app_command(self.bot)(self.bestteam)
 
-    @commandAttrs(
+    @commandattrs(
         category="Records",
         description='Gets the best team within a optional given region.',
         brief="Gets the best team from ftcscout.org",
@@ -24,7 +24,7 @@ class RecordCog(commands.Cog):
         name='bestteam'
     )
     async def bestteam(self, interaction: discord.Interaction, region: str ='All'):
-        data, success = queries.bestTeam(region)
+        data, success = queries.best_team(region)
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
             await interaction.response.send_message(embed=embed)
@@ -37,7 +37,7 @@ class RecordCog(commands.Cog):
 
         embed = discord.Embed(title=title, description=desc, color=EMBED_COLOR)
 
-        name, val = qStatsTemplate(auto, tele, endgame, np)
+        name, val = quickstats_template(auto, tele, endgame, np)
         embed.add_field(name=name, value=val, inline=False)
 
         for event in team_events:
@@ -46,11 +46,11 @@ class RecordCog(commands.Cog):
 
                 embed.add_field(name=name, value=val, inline=False)
 
-        setFooter(embed)
+        set_footer(embed)
 
         await interaction.response.send_message(embed=embed)
 
-    @commandAttrs(
+    @commandattrs(
         category='Records',
         description='Gets the best match within a optional given region.',
         brief="Gets the best match from ftcscout.org.",
@@ -62,7 +62,7 @@ class RecordCog(commands.Cog):
     )
     async def worldrecord(self, interaction: discord.Interaction, region: str ='All'):
         await interaction.response.defer()
-        data, success = queries.bestMatch(region)
+        data, success = queries.best_match(region)
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
             await interaction.response.send_message(embed=embed)
@@ -74,9 +74,9 @@ class RecordCog(commands.Cog):
         title = f"Best match was played at {event.name} on {event.start}\n{event.location.cityStateCountry} ({event.event_type})"
         scores_embed = discord.Embed(title=title, description="═══════════════════════════════", color=EMBED_COLOR)
 
-        addMatchScores(match, scores_embed)
+        add_match_scores(match, scores_embed)
 
-        setFooter(scores_embed)
+        set_footer(scores_embed)
 
         await interaction.followup.send(embed=scores_embed)
 

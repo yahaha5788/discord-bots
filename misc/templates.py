@@ -1,5 +1,5 @@
 from typing import NamedTuple, Union
-from misc.config import appendSuffix
+from misc.config import append_suffix
 import discord
 
 class QuickStats(NamedTuple):
@@ -141,10 +141,10 @@ class WorldsEvent(NamedTuple):
 
 #------------------------ TEMPLATES -----------------------------------------#
 
-def awardTemplate(award: Award) -> str:
-    return f"{appendSuffix(award.placement)} place {award.type}\n"
+def award_template(award: Award) -> str:
+    return f"{append_suffix(award.placement)} place {award.type}\n"
 
-def unplayedEventTemplate(event: Event) -> str:
+def unplayed_event_template(event: Event) -> str:
     return f"**{event.name} on {event.start}, at {event.location.venue} in {event.location.cityStateCountry}**\nType: {event.event_type}"
 
 def eventTemplate(event: Event) -> tuple[str, str]:
@@ -169,30 +169,30 @@ Awards:"""
 
     val = val + f"\n"
     for award in event.stats.awards:
-        val = val + awardTemplate(award)
+        val = val + award_template(award)
 
     return name, val
 
-def qStatsTemplate(auto, teleop, endgame, np) -> tuple[str, str]:
+def quickstats_template(auto, teleop, endgame, np) -> tuple[str, str]:
     name = "**Quick Stats:**"
     val = f"""
 Auto: {auto}\nTeleOp: {teleop}\nEndgame: {endgame}\nNpTotal: {np}
 """
     return name, val
 
-def matchScoresTemplate(red: Alliance, blue: Alliance) -> str:
+def match_scores_template(red: Alliance, blue: Alliance) -> str:
     return f"Red Alliance ({red.one} & {red.two}) - {red.scores.totalPoints} ({red.scores.totalPointsNP})\nBlue Alliance ({blue.one} & {blue.two}) - {blue.scores.totalPoints} ({blue.scores.totalPointsNP})"
 
-def autoScores(scores: MatchScores) -> str:
+def auto_scores(scores: MatchScores) -> str:
     return f"**{scores.autoPoints}**\n{scores.autoSample}\n{scores.autoSpecimen}\n{scores.autoPark}"
 
-def teleOpScores(scores: MatchScores) -> str:
+def dc_scores(scores: MatchScores) -> str: # dc is teleop period
     return f"**{scores.dcPoints}**\n{scores.dcSample}\n{scores.dcSpecimen}\n{scores.dcPark}"
 
-def penaltyPoints(scores: MatchScores) -> str:
+def penalty_points(scores: MatchScores) -> str:
     return f"**{scores.penaltyPointsByOpp}**\n{scores.majorPenalties*15}\n{scores.minorPenalties*5}"
 
-def addMatchScores(match: Match, embed: discord.Embed) -> None:
+def add_match_scores(match: Match, embed: discord.Embed) -> None:
     red = match.red
     blue = match.blue
 
@@ -200,15 +200,15 @@ def addMatchScores(match: Match, embed: discord.Embed) -> None:
     embed.add_field(name="Alliance\nNumber", value=table_values, inline=True)
 
     red_name = f"Red Alliance\n({red.one.number} & {red.two.number})"
-    red_scores = f"{red.scores.totalPoints} ({red.scores.totalPointsNP})\n\n{autoScores(red.scores)}\n\n{teleOpScores(red.scores)}\n\n{penaltyPoints(red.scores)}"
+    red_scores = f"{red.scores.totalPoints} ({red.scores.totalPointsNP})\n\n{auto_scores(red.scores)}\n\n{dc_scores(red.scores)}\n\n{penalty_points(red.scores)}"
 
     blue_name = f"Blue Alliance\n({blue.one.number} & {blue.two.number})"
-    blue_scores = f"{blue.scores.totalPoints} ({blue.scores.totalPointsNP})\n\n{autoScores(blue.scores)}\n\n{teleOpScores(blue.scores)}\n\n{penaltyPoints(blue.scores)}"
+    blue_scores = f"{blue.scores.totalPoints} ({blue.scores.totalPointsNP})\n\n{auto_scores(blue.scores)}\n\n{dc_scores(blue.scores)}\n\n{penalty_points(blue.scores)}"
 
     embed.add_field(name=red_name, value=red_scores, inline=True)
     embed.add_field(name=blue_name, value=blue_scores, inline=True)
 
-def addSponsors(sponsors: list[str], string: str) -> str:
+def add_sponsors(sponsors: list[str], string: str) -> str:
     if not sponsors:
         return string + "None"
 
@@ -218,7 +218,7 @@ def addSponsors(sponsors: list[str], string: str) -> str:
     return string
 
 #------------------------------ HELP ----------------------------#
-def formatUsage(usage: str, parameters: dict[str, str]) -> tuple[str, str]:
+def format_usage(usage: str, parameters: dict[str, str]) -> tuple[str, str]:
     name = "Usage"
     value = f"{usage}"
     if parameters:
@@ -227,7 +227,7 @@ def formatUsage(usage: str, parameters: dict[str, str]) -> tuple[str, str]:
 
     return name, value
 
-def eventStarted(started: bool, ongoing: bool) -> str:
+def event_status(started: bool, ongoing: bool) -> str:
     if started:
         if ongoing:
             return "This event is ongoing."

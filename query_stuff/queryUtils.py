@@ -3,7 +3,7 @@ import requests
 from types import SimpleNamespace
 
 from misc.templates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores, EventDates
-from misc.config import getCodeDesc, appendSuffix
+from misc.config import get_code_desc, append_suffix
 
 def parseQuery(query) -> tuple[bool, SimpleNamespace] | tuple[bool, str]:
     response = requests.post(url="https://api.ftcscout.org/graphql", json={"query": query})
@@ -15,16 +15,16 @@ def parseQuery(query) -> tuple[bool, SimpleNamespace] | tuple[bool, str]:
 
     else:
         success = False
-        return success, f"Request did not return code 200, instead returned code {response.status_code}: {getCodeDesc(response.status_code)}"
+        return success, f"Request did not return code 200, instead returned code {response.status_code}: {get_code_desc(response.status_code)}"
 
 def formatQStats(auto: SimpleNamespace, teleop: SimpleNamespace, endgame: SimpleNamespace, np: SimpleNamespace) -> QuickStats:
-    auto = f"{round(auto.value, 2)} | {appendSuffix(auto.rank)}"
+    auto = f"{round(auto.value, 2)} | {append_suffix(auto.rank)}"
 
-    teleOp = f"{round(teleop.value, 2)} | {appendSuffix(teleop.rank)}"
+    teleOp = f"{round(teleop.value, 2)} | {append_suffix(teleop.rank)}"
 
-    endGame = f"{round(endgame.value, 2)} | {appendSuffix(endgame.rank)}"
+    endGame = f"{round(endgame.value, 2)} | {append_suffix(endgame.rank)}"
 
-    npData = f"{round(np.value, 2)} | {appendSuffix(np.rank)}"
+    npData = f"{round(np.value, 2)} | {append_suffix(np.rank)}"
 
     return QuickStats(auto, teleOp, endGame, npData)
 

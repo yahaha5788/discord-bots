@@ -15,12 +15,12 @@ bot = commands.Bot(command_prefix='h$', intents=intents, activity=STARTING)
 
 @bot.event
 async def on_ready():
-    for cog in bot.cogs:
+    for cog in bot.cogs: # eat some leftovers
         await bot.remove_cog(cog)
 
     await bot.add_cog(basicCogs.FunCog(bot))
 
-    # await bot.add_cog(competitonCogs.CompetitionCog(bot))
+    # await bot.add_cog(competitonCogs.CompetitionCog(bot)) NOT FUNCTIONAL
 
     await bot.add_cog(eventCogs.EventCog(bot))
     await bot.add_cog(eventCogs.QualificationCog(bot))

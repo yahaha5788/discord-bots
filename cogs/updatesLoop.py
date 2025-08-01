@@ -2,10 +2,10 @@ import json
 import discord
 from discord.ext import commands, tasks
 
-from misc.templates import unplayedEventTemplate, UpcomingEvents, OngoingEvents, Event
+from misc.templates import unplayed_event_template, UpcomingEvents, OngoingEvents, Event
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, setFooter
+from misc.config import EMBED_COLOR, set_footer
 
 class Updates(commands.Cog):
     def __init__(self, bot):

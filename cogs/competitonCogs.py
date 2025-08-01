@@ -7,8 +7,8 @@ from discord import VoiceChannel
 
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, FTC_LOGO, commandAttrs, addAppCommand
-from misc.templates import EventDates, MajorQualifyingEvent, eventStarted
+from misc.config import EMBED_COLOR, FTC_LOGO, commandattrs, add_app_command
+from misc.templates import EventDates, MajorQualifyingEvent, event_status
 
 
 class CompetitionCog(commands.Cog):
@@ -18,7 +18,7 @@ class CompetitionCog(commands.Cog):
             self.event_logo = logo.read()
 
     async def cog_load(self) -> None:
-        addAppCommand(self.bot)(self.worlds)
+        add_app_command(self.bot)(self.worlds)
 
     async def createEvent(self, guild: discord.Guild, name: str, day: EventDates, vc: VoiceChannel, links: str) -> discord.ScheduledEvent:
         start_time = datetime(int(day.year), int(day.month), int(day.start_day), 12, 0, 0, tzinfo=timezone.utc)
@@ -35,17 +35,14 @@ class CompetitionCog(commands.Cog):
         )
         return event
 
-    @commandAttrs(
+    @commandattrs(
         category='Competition',
-        param_guide={
-            "<vc>": 'The voice channel location of the server event. Type "#!" to mention the voice channel just as you would use "#" to mention a normal channel'
-        },
         brief="testing",
         description="testing",
-        usage=f"/worlds <vc>",
+        usage=f"/worlds",
         name='worlds'
     )
-    async def worlds(self, interaction: discord.Interaction, divison: Optional[str] = None, datatype: Optional[str] = None):
+    async def worlds(self, interaction: discord.Interaction, divison: Optional[str] = None):
         data, success = queries.worlds()
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
@@ -57,7 +54,7 @@ class CompetitionCog(commands.Cog):
         if divison is None:
             finals: MajorQualifyingEvent
             finals_title = f"{finals.name}- {finals.dates.month} / {finals.dates.start_day} / {finals.dates.year} to {finals.dates.month} / {finals.dates.end_day} / {finals.dates.year}"
-            finals_name = f"{eventStarted(finals.started, finals.ongoing)}"
+            finals_name = f"{event_status(finals.started, finals.ongoing)}"
             finals_value = f"There are {len(finals.teams)} teams in this event."
             finals_embed = discord.Embed(title=finals_title, color=EMBED_COLOR)
             finals_embed.add_field(name=finals_name, value=finals_value)
@@ -68,7 +65,7 @@ class CompetitionCog(commands.Cog):
                     edison: MajorQualifyingEvent
                     edison_teams = ''
                     for team in edison.teams:
-                        name = team.name
+                        name = team.name # save space
                         number = team.number
                         edison_teams += f"{number}\n"
 
@@ -112,7 +109,7 @@ class CompetitionCog(commands.Cog):
 
                     await interaction.response.send_message(embed=franklin_embed)
 
-    @commandAttrs(
+    @commandattrs(
         category='Competition',
         param_guide={
             "<name>": "The name of the states event.",

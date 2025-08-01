@@ -5,7 +5,7 @@ from types import SimpleNamespace
 #from .queryUtils import formatEventInfo, formatTeamEventData
 
 
-def nameFromNumber(number) -> str:
+def name_from_number(number) -> str:
     query: str = """
 {
     teamByNumber(number: """+str(number)+""") {
@@ -19,7 +19,7 @@ def nameFromNumber(number) -> str:
 
     return data.data.teamByNumber.name
 
-def bestTeam(region: str) -> QueryResult:
+def best_team(region: str) -> QueryResult:
     query: str = """
 {
     tepRecords(region: """+region+""", season: 2024, skip: 0, take: 1, sortDir: Desc, sortBy: "opr") { #gets the best team
@@ -112,7 +112,7 @@ def bestTeam(region: str) -> QueryResult:
     
     return QueryResult(result, success)
     
-def teamQuickStats(number) -> QueryResult:
+def team_quickstats(number) -> QueryResult:
     query: str = """
 {
     teamByNumber(number: """+number+""") {
@@ -160,7 +160,7 @@ def teamQuickStats(number) -> QueryResult:
 
     return QueryResult(result, success)
 
-def teamEvents(number) -> QueryResult:
+def team_events(number) -> QueryResult:
     query: str = """
 {
     teamByNumber(number: """+number+""") {
@@ -221,7 +221,7 @@ def teamEvents(number) -> QueryResult:
 
     return QueryResult(result, success)
 
-def teamLogistics(number) -> QueryResult:
+def team_logistics(number) -> QueryResult:
     query: str = """
 {
     teamByNumber(number: """+number+""") {
@@ -261,7 +261,7 @@ def teamLogistics(number) -> QueryResult:
 
     return QueryResult(result, success)
 
-def bestMatch(region) -> QueryResult:
+def best_match(region) -> QueryResult:
     query: str = """
 {
     matchRecords(season: 2024, region: """+region+""", skip: 0, take: 1, sortDir: Desc) {
@@ -340,7 +340,7 @@ def bestMatch(region) -> QueryResult:
 
     return QueryResult(result, success)
 
-def upcomingEvents(number) -> QueryResult:
+def upcoming_events(number) -> QueryResult:
     query: str = """
 {
     teamByNumber(number: """+number+""") {
@@ -386,7 +386,7 @@ def upcomingEvents(number) -> QueryResult:
     return QueryResult(result, success)
 
 
-def ongoingEvents(number) -> QueryResult:
+def ongoing_events(number) -> QueryResult:
     query: str = """
 {
     teamByNumber(number: """ + number + """) {
@@ -431,7 +431,7 @@ def ongoingEvents(number) -> QueryResult:
 
     return QueryResult(result, success)
 
-def qualifiedSTATES(number) -> QueryResult:
+def qual_states(number) -> QueryResult:
     query: str = """
 {
     teamByNumber(number: """+number+""") {
@@ -490,7 +490,7 @@ def qualifiedSTATES(number) -> QueryResult:
 
     return QueryResult(result, success)
 
-def qualifiedWORLDS(number) -> QueryResult:
+def qual_worlds(number) -> QueryResult:
     query: str = """
 {
     teamByNumber(number: """+number+""") {
@@ -549,7 +549,7 @@ def qualifiedWORLDS(number) -> QueryResult:
 
     return QueryResult(result, success)
 
-def worldsQuery(div: str) -> str:
+def worlds_query(div: str) -> str: # diff func because seasons
     return '''
     {
         eventsSearch(searchText: "''' + div + ''' Division", season: 2024, type: FIRSTChampionship) {
@@ -575,7 +575,7 @@ def worlds() -> QueryResult:
     divs: list[MajorQualifyingEvent] = []
     for i in ['finals', 'edison', 'jemison', 'franklin', 'ochoa']:
 
-        query = worldsQuery(i)
+        query = worlds_query(i)
 
         success, data = queryUtils.parseQuery(query)
         if not success:
@@ -596,7 +596,7 @@ def worlds() -> QueryResult:
         for team in div.teams:
             teams.append(Team(team.team.name, team.team.number))
 
-        divs.append(MajorQualifyingEvent(div_name, start, teams, div.started, div.ongoing, div.finished, stream))
+        divs.append(MajorQualifyingEvent(div_name, start, teams, [], div.started, div.ongoing, div.finished, stream)) # not giving matches for worlds due to the sheer number
 
     result = WorldsEvent(divs[0], divs[1], divs[2], divs[3], divs[4])
 
