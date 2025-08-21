@@ -1,5 +1,5 @@
 from discord.ext import commands
-from discord import Interaction
+from discord import Interaction, app_commands
 import discord
 from random import randint, choice
 from misc.config import EMBED_COLOR, CHOICES, commandattrs, add_app_command, set_footer
@@ -25,6 +25,7 @@ class FunCog(commands.Cog):
             '<sides>': "The number of sides on the die."
         }
     )
+    @app_commands.describe(sides="The number of sides on the die.")
     async def dice(self, interaction: Interaction, sides: int = 6):
         roll = randint(1, int(sides))
         dice_embed = discord.Embed(title=":game_die:", description=f"You rolled a **{roll}** on a **{sides}** sided die.", color=EMBED_COLOR)

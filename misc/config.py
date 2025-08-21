@@ -1,9 +1,9 @@
 import json
 from http.client import responses
-from typing import Final, Optional
+from typing import Final, Optional, NoReturn, Any
 
 import discord
-from discord import app_commands
+from discord import app_commands, ButtonStyle
 from discord.ext import commands
 
 # ------------------ FINALS ----------------------#
@@ -58,7 +58,7 @@ def set_footer(embed: discord.Embed) -> None:
 
 
 # --------------- CATEGORIZED COMMANDS --------------------------#
-def commandattrs(name: str, description: str, usage: str, brief: str, category: str, param_guide: Optional[dict[str, str]] = None):
+def commandattrs(name: str, description: str, usage: str, brief: str, category: str, param_guide: Optional[dict[str, str]] = None, param_options: Optional[dict[str, list[dict[str, Any]]]] = None):
     def decorator(cmd):
         cmd.name = name
         cmd.description = description
@@ -66,25 +66,27 @@ def commandattrs(name: str, description: str, usage: str, brief: str, category: 
         cmd.brief = brief
         cmd.category = category
         cmd.param_guide = param_guide
+        cmd.param_options = param_options
 
         return cmd
     return decorator
 
-def gather_command_attrs(cmd) -> tuple[str, str, str, str, str, dict[str, str] | None]:
+def gather_command_attrs(cmd) -> tuple[str, str, str, str, str, dict[str, str] | None, dict[str, list[dict[str, str]]] | None]:
     name = getattr(cmd, "name")
     description = getattr(cmd, "description")
     category = getattr(cmd, "category")
     usage = getattr(cmd, "usage")
     brief = getattr(cmd, "brief")
     param_guide = getattr(cmd, "param_guide", None)
+    param_options = getattr(cmd, "param_options", None)
 
-    return name, description, category, usage, brief, param_guide
+    return name, description, category, usage, brief, param_guide, param_options
 
 def add_app_command(
     bot: commands.Bot,
 ):
     def decorator(cmd):
-        name, description, category, usage, brief, param_guide = gather_command_attrs(cmd)
+        name, description, category, usage, brief, param_guide, param_options = gather_command_attrs(cmd)
 
         command = app_commands.command(name=name, description=description)(cmd)
 
@@ -92,6 +94,19 @@ def add_app_command(
         command.brief = brief
         command.category = category
         command.param_guide = param_guide
+        command.param_options = param_options
+
+
+        # apply descriptions
+        if param_guide:
+            for param, desc in param_guide.items():
+                command = app_commands.describe(**{param.strip("<>"): desc})(command)
+
+        # apply choices
+        if param_options:
+            for param, options in param_options.items():
+                choices = [app_commands.Choice(name=n, value=v) for n, v in options]
+                command = app_commands.choices(**{param.strip("<>"): choices})(command)
 
         if bot.guilds:
             for guild in bot.guilds:
@@ -105,10 +120,9 @@ def add_app_command(
 class CategorizedAppCommand: # basically just wraps every command when the help function is run
     def __init__(self, command): # TODO: OPTIMIZE- WRAP ALL COMMANDS ON START AND USE INSTEAD OF WRAPPING EVERY TIME /HELP IS RUN
         self.command = command
-        self.name, self.description, self.category, self.usage, self.brief, self.param_guide = gather_command_attrs(
-            command)
+        self.name, self.description, self.category, self.usage, self.brief, self.param_guide, self.param_options = gather_command_attrs(command)
 
-def gather_app_commands(commands_to_filter: list[CategorizedAppCommand], keyword: str) -> tuple[list[CategorizedAppCommand], str, Optional[str]]:
+def gather_app_commands(commands_to_filter: list[CategorizedAppCommand], keyword: str) -> tuple[list[CategorizedAppCommand], str, str | None]:
     result = []
 
     for command in commands_to_filter:
@@ -117,9 +131,12 @@ def gather_app_commands(commands_to_filter: list[CategorizedAppCommand], keyword
 
         if command.name.lower() == keyword.lower():
             result.append(command)
+
             return result, 'command', None
+
     if not result:
         return result, 'all', None
+
     return result, 'category', result[0].category
 
 def sort_category_commands(commands_to_sort: list[CategorizedAppCommand]) -> list[CategorizedAppCommand]:
@@ -127,7 +144,9 @@ def sort_category_commands(commands_to_sort: list[CategorizedAppCommand]) -> lis
 
 def sort_all_commands(commands_to_sort: list[CategorizedAppCommand]) -> dict[str, list[CategorizedAppCommand]]:
     sorted_commands = sorted(commands_to_sort, key=lambda cmd: cmd.category.lower())
+
     commands_dict: dict[str, list[CategorizedAppCommand]] = {}
+
     for command in sorted_commands:
         if command.category not in commands_dict.keys(): #creates list of category commands if it does not exist
             commands_dict[command.category] = []
@@ -135,4 +154,49 @@ def sort_all_commands(commands_to_sort: list[CategorizedAppCommand]) -> dict[str
         commands_dict[command.category].append(command)
 
     return commands_dict
+
+# --------------------------------------------- PAGES ------------------------------------- #
+
+class MultiPageEmbed:
+    def __init__(self, title: str, page_content: list[str]):
+        self.title = title
+        self.page_content = page_content
+        # create embed with title and content for each piece in page_content, for example an embed with one event
+        # not used for help command, as that goes off of character limit to determine when more pages are generated
+        self.pages: list[discord.Embed] = [discord.Embed(title=title, description=content, color=EMBED_COLOR) for content in page_content]
+        for page in self.pages:
+            set_footer(page)
+
+        self.current_index = 0
+
+
+        async def previous_page(interact: discord.Interaction):
+            if self.current_index > 0:
+                self.current_index -= 1
+
+                await interact.message.edit(embed=self.pages[self.current_index])
+
+            await interact.response.defer()
+
+        async def next_page(interact: discord.Interaction):
+            if self.current_index < len(self.pages) - 1:
+                self.current_index += 1
+                
+                await interact.message.edit(embed=self.pages[self.current_index])
+
+            await interact.response.defer()
+
+        backButton = discord.ui.Button(label="⬅️", style=ButtonStyle.grey)
+        nextButton = discord.ui.Button(label="➡️", style=ButtonStyle.grey)
+
+        backButton.callback = previous_page
+        nextButton.callback = next_page
+
+        self.help_view = discord.ui.View(timeout=30)
+
+        self.help_view.add_item(backButton)
+        self.help_view.add_item(nextButton)
+
+    def send(self, interaction: discord.Interaction):
+        interaction.response.send_message(embed=self.pages[0], view=self.help_view)
 

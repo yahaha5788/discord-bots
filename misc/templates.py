@@ -2,6 +2,8 @@ from typing import NamedTuple, Union
 from misc.config import append_suffix
 import discord
 
+# namedtuples go brrr
+
 class QuickStats(NamedTuple):
     autoData: str
     teleOpData: str
@@ -139,7 +141,7 @@ class WorldsEvent(NamedTuple):
     OchoaDiv: MajorQualifyingEvent
 
 
-#------------------------ TEMPLATES -----------------------------------------#
+#------------------------ TEMPLATES FOR FORMATTING -----------------------------------------#
 
 def award_template(award: Award) -> str:
     return f"{append_suffix(award.placement)} place {award.type}\n"

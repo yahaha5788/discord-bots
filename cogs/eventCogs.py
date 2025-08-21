@@ -1,9 +1,9 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from query_stuff import queries
 from query_stuff.queries import name_from_number
-
 
 from misc.templates import eventTemplate
 from misc.config import EMBED_COLOR, set_footer, commandattrs, add_app_command
@@ -19,6 +19,51 @@ class EventCog(commands.Cog):
 
     @commandattrs(
         category="Events",
+        usage="/event <keyword> <season> <region> <event_type>",
+        brief="",
+        description="",
+        param_guide={
+            "<keyword>": "A keyword to use in the event search.",
+            "<season>": "The season to search in.",
+            "<region>": "The region to search in.",
+            "<event_type>": "The event type to search for."
+        },
+        param_options={  # dict hell
+            "<season>": [{"Into The Deep": 2024}, {"Centerstage": 2023}, {"Power Play": 2022}, {"Freight Frenzy": 2021},
+                         {"Ultimate Goal": 2020}, {"Skystone": 2019}],
+            "<event_type>": [{"All": "All"}, {"Qualifier": "Qualifier"}, {"League Meet": "LeagueMeet"}, {"League Tournament": "LeagueTournament"},
+                         {"FIRST Championship": "FIRSTChampionship"}, {"Championship": "Championship"},
+                         {"Demo Exhibition": "DemoExhibition"}, {"Innovation Challenge": "InnovationChallenge"}, {"Kickoff": "Kickoff"},
+                         {"Non-Competition": "NonCompetition"}, {"Off Season": "OffSeason"}, {"Official": "Official"},
+                         {"Other": "Other"}, {"Practice": "PracticeDay"}, {"Premier Event": "Premier"}, {"Scrimmage": "Scrimmage"},
+                         {"Super Qualifier": "SuperQualifier"}, {"Volunteer Signup": "VolunteerSignup"},
+                         {"Workshop": "Workshop"}],
+            "<region>": [{"All": "All"}, {"International": "International"}, {"United States": "UnitedStates"}, {"Ohio": "USOH"},
+                         {"Alaska": "USAK"}, {"Alabama": "USAL"}, {"Arkansas": "USAR"}, {"Arizona": "USAZ"}, {"California": "USCA"},
+                         {"Colorado": "USCO"}, {"Connecticut": "USCT"}, {"Delaware": "USDE"}, {"Florida": "USFL"},
+                         {"Georgia": "USGA"}, {"Hawaii": "USHI"}, {"Iowa": "USIA"}, {"Idaho": "USID"}, {"Illinois": "USIL"},
+                         {"Indiana": "USIN"}, {"Kentucky": "USKY"}, {"Louisiana": "USLA"}, {"Massachusetts": "USMA"},
+                         {"Maryland": "USMD"}, {"Michigan": "USMI"}, {"Minnesota": "USMN"}, {"Missouri & Kansas": "USMOKS"},
+                         {"Mississippi": "USMS"}, {"Montana": "USMT"}, {"North Carolina": "USNC"}, {"North Dakota": "USND"},
+                         {"Nebraska": "USNE"}, {"New Hampshire": "USNH"}, {"New Jersey": "USNJ"}, {"New Mexico": "USMX"},
+                         {"Nevada": "USNV"}, {"New York": "USNY"}, {"Oklahoma": "USOK"}, {"Oregon": "USOK"}, {"Pennsylvania": "USPA"},
+                         {"Rhode Island": "USRI"}, {"South Carolina": "USSC"}, {"Tennessee": "USTN"}, {"Texas": "USTX"},
+                         {"Utah": "USUT"}, {"Virginia": "USVA"}, {"Vermont": "USVT"}, {"Washington": "USWA"}, {"Wisconsin": "USWI"},
+                         {"West Virginia": "USWV"}, {"Wyoming": "USWY"}, {"Australia": "AU"}, {"Brazil": "BR"}, {"Alberta": "CAAB"},
+                         {"British Columbia": "CABC"}, {"Ontario": "CAON"}, {"Québec": "CAQC"}, {"China": "CN"}, {"Cyprus": "CY"},
+                         {"Germany": "DE"}, {"Egypt": "EG"}, {"Spain": "ES"}, {"France": "FR"}, {"Great Britain": "GB"},
+                         {"Israel": "IL"}, {"India": "IN"}, {"Jamaica": "JM"}, {"South Korea": "KR"}, {"Kazakhstan": "KZ"},
+                         {"Libya": "LY"}, {"Mexico": "MX"}, {"Nigeria": "NG"}, {"Netherlands": "NL"}, {"New Zealand": "NZ"},
+                         {"Qatar": "QA"}, {"Romania": "RO"}, {"Russia": "RU"}, {"Saudi Arabia": "SA"}, {"Thailand": "TH"},
+                         {"Taiwan": "TW"}, {"South Africa": "ZA"}]
+        },
+        name="event"
+    )
+    async def event(self, interaction: discord.Interaction, keyword: app_commands.Choice[str], season: app_commands.Choice[int], region: app_commands.Choice[str], event_type: app_commands.Choice[str]):
+        await interaction.response.send_message(f"`keyword` = `{keyword}` | `season` = `{season}` | `region` = `{region}` | `event_type` = `{event_type}`")
+
+    @commandattrs(
+        category="Events",
         usage=f"/teamevents <number>",
         brief="Gets all events a team has had or will have.",
         description="Gets all events a team has had or will have, and their stats for events they've played.",
@@ -27,6 +72,7 @@ class EventCog(commands.Cog):
         },
         name='teamevents'
     )
+    @app_commands.describe(number="The number of the team to query for.")
     async def teamevents(self, interaction: discord.Interaction, number: int):
         data, success = queries.team_events(str(number))
         if not success:
@@ -34,7 +80,7 @@ class EventCog(commands.Cog):
             await interaction.response.send_message(embed=embed)
             return
         info, events = data
-        title = f"Team {info.number}, {info.name}"
+        title = f"Events for Team {info.number}, {info.name}"
 
         events_embed = discord.Embed(title=title, color=EMBED_COLOR)
 
@@ -98,6 +144,7 @@ class QualificationCog(commands.Cog):
 
         qual_embed = discord.Embed(title=title, color=EMBED_COLOR)
         qual_embed.add_field(name=name, value=val, inline=False)
+
         set_footer(qual_embed)
 
         await interaction.response.send_message(embed=qual_embed)

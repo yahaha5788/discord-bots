@@ -1,5 +1,8 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
+
+from typing import Optional
 
 from query_stuff import queries
 
@@ -48,18 +51,24 @@ class StatsCog(commands.Cog):
 
     @commandattrs(
         category='Stats',
-        description='NOT IMPLEMENTED',
-        brief="NOT IMPLEMENTED",
-        usage=f"/customstat <number> <stat> <value> <period>",
+        description='Gets a specific statistic for a team',
+        brief="Gets a specific statistic for a team",
+        usage="/stat <number> <stat> <value> <period>",
         param_guide={
             "<number>": "The number of the team to query for.",
-            "<stat>": "The specific statistic to query for. Options are: teleop, auto, np, sample, specimen, park",
-            "<value>": "The value of statistic to query for. Options are: avg (default), max, min",
-            "<period>": "The period of a match to search in. Options are: teleop (default), auto"
+            "<stat>": "The specific statistic to query for.",
+            "<value>": "The value of the statistic.",
+            "<period>": "The period of a match to search in."
         },
-        name='customstat'
+        param_options={
+            "<stat>": [{"Sample": "sample"}, {"Specimen": "spec"}, {"Park / Hang": "park"}],
+            "<value>": [{"Average": "avg"}, {"Maximum": "max"}, {"Minimum": "min"}],
+            "<period>": [{"TeleOp": "dc"}, {"Autonomous": "auto"}],
+        },
+        name='stat'
     )
-    async def customstat(self, interaction: discord.Interaction, number: int, stat: str, value: str = 'avg', period: str = 'teleop'):
+    async def stat(self, interaction: discord.Interaction, number: int, stat: app_commands.Choice[str], value: app_commands.Choice[str], period: app_commands.Choice[str]):
+        await interaction.response.send_message("This command pulls from the alliance score as it is not possible to see the single team's score.")
         raise NotImplementedError() # TODO: IMPLEMENT
         # wow really? i couldn't tell that this needs to be implemented
 

@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord import ButtonStyle
+from discord import ButtonStyle, app_commands
 
 from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gather_app_commands, add_app_command, commandattrs, \
     CategorizedAppCommand, sort_category_commands, sort_all_commands, set_footer
@@ -16,7 +16,7 @@ class HelpCog(commands.Cog):
         add_app_command(self.bot)(self.help)
         add_app_command(self.bot)(self.intro)
 
-    async def allHelp(self, interaction: discord.Interaction):
+    async def all_help(self, interaction: discord.Interaction):
         current_page = discord.Embed(
             title="Harold's Commands",
             description="Type `/help <category>` for help on a specific category!\nType `/help <command>` for help on a specific command!\n",
@@ -76,9 +76,9 @@ class HelpCog(commands.Cog):
         help_view.add_item(backButton)
         help_view.add_item(nextButton)
 
-        await interaction.response.send_message(embed=pages[current_index], view=help_view)
+        await interaction.response.send_message(embed=pages[0], view=help_view)
 
-    async def commandHelp(self, interaction: discord.Interaction, command: CategorizedAppCommand):
+    async def command_help(self, interaction: discord.Interaction, command: CategorizedAppCommand):
         title = f"/{command.name}"
         help_embed = discord.Embed(title=title, color=EMBED_COLOR)
 
@@ -92,7 +92,7 @@ class HelpCog(commands.Cog):
 
         await interaction.response.send_message(embed=help_embed)
 
-    async def categoryHelp(self, interaction: discord.Interaction, commands_in_category, category):
+    async def category_help(self, interaction: discord.Interaction, commands_in_category, category):
         current_page = discord.Embed(
             title=f"{category} Commands",
             description=f"Type `/help <command>` for help on a specific command.",
@@ -153,7 +153,7 @@ class HelpCog(commands.Cog):
         brief="Help command. Shows this command.",
         usage='/help <keyword>',
         param_guide={
-            "<keyword>": "An option key word to filter by command or category."
+            "<keyword>": "An optional key word to filter by command or category."
         },
         category='Help'
     )
@@ -162,13 +162,13 @@ class HelpCog(commands.Cog):
             commands_to_show, help_type, category = gather_app_commands(self.commands, keyword)
             if help_type == 'category':
                 commands_to_show = sort_category_commands(commands_to_show)
-                await self.categoryHelp(interaction, commands_to_show, category)
+                await self.category_help(interaction, commands_to_show, category)
             elif help_type == 'command':
-                await self.commandHelp(interaction, commands_to_show[0])
+                await self.command_help(interaction, commands_to_show[0])
             else:
                 await interaction.response.send_message("That is not a valid command or category name.")
         else:
-            await self.allHelp(interaction)
+            await self.all_help(interaction)
 
     @commandattrs(
         name='intro',

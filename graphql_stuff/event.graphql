@@ -1,0 +1,17 @@
+query {
+    eventsSearch(searchText: "test", season: 2024, region: USOH, type: F) {
+        name
+        start
+        end
+        started
+        ongoing
+        finished
+        type
+        location {
+            venue
+            city
+            state
+            country
+        }
+    }
+}
