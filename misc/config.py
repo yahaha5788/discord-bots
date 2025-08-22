@@ -54,7 +54,12 @@ def append_suffix(num: int) -> str:
     return fin
 
 def set_footer(embed: discord.Embed) -> None:
-    embed.add_field(name="Links", value="[FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
+    """
+    Gives links to put at the bottom of an embed. Since links don't work in the footer field of an embed,
+    this should be used after all embed fields are added.
+    :param embed: The embed to add the links to.
+    """
+    embed.add_field(name="-# Links", value="-# [FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
 
 
 # --------------- CATEGORIZED COMMANDS --------------------------#

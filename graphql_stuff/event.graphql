@@ -1,5 +1,5 @@
 query {
-    eventsSearch(searchText: "test", season: 2024, region: USOH, type: F) {
+    eventsSearch(searchText: "NEOH", season: 2024, region: USOH, type: LeagueTournament) {
         name
         start
         end
@@ -13,5 +13,12 @@ query {
             state
             country
         }
+        teams {
+            teamNumber
+        }
+        matches {
+            matchNum
+        }
+        code
     }
 }

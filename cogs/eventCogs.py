@@ -2,6 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from builders import eventEmbedBuilders
 from query_stuff import queries
 from query_stuff.queries import name_from_number
 
@@ -60,7 +61,14 @@ class EventCog(commands.Cog):
         name="event"
     )
     async def event(self, interaction: discord.Interaction, keyword: app_commands.Choice[str], season: app_commands.Choice[int], region: app_commands.Choice[str], event_type: app_commands.Choice[str]):
-        await interaction.response.send_message(f"`keyword` = `{keyword}` | `season` = `{season}` | `region` = `{region}` | `event_type` = `{event_type}`")
+        event_embed: discord.Embed | None = eventEmbedBuilders.EventEmbed(keyword.value, season.value, region.value, event_type.value).create()
+        if event_embed is None:
+            await interaction.response.send_message("https://ftcscout.org did not respond, run `/ping` to check the website status.")
+
+        else:
+            await interaction.response.send_message(embed=event_embed)
+
+
 
     @commandattrs(
         category="Events",

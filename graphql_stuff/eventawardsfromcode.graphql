@@ -1,0 +1,12 @@
+query {
+    eventByCode(code: "USOHNEOHLT", season: 2024) {
+        awards {
+            team {
+                name
+                number
+            }
+            placement
+            type
+        }
+    }
+}
