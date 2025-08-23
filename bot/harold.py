@@ -32,7 +32,9 @@ async def on_ready():
     await bot.add_cog(statsCogs.StatsCog(bot))
     await bot.add_cog(statsCogs.InfoCog(bot))
 
-    await bot.add_cog(helpCogs.HelpCog(bot))
+    help_cog = helpCogs.HelpCog(bot)
+
+    await bot.add_cog(help_cog)
 
     # Sync to each guild
     for guild in bot.guilds:
@@ -41,6 +43,8 @@ async def on_ready():
             print(f"Synced {len(synced)} command(s) to guild: {guild.name} ({guild.id})")
         except Exception as e:
             print(f"Failed to sync commands to guild {guild.name} ({guild.id}): {e}")
+
+    help_cog.wrap_all_commands(bot.guilds[0])
 
     await bot.change_presence(activity=ACTIVITY)
     print('Bot is ready')

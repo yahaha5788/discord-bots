@@ -53,7 +53,7 @@ class EventCog(commands.Cog):
         try:
             event_embeds: discord.Embed | tuple[list[discord.Embed], discord.ui.View] | None = eventEmbedBuilders.EventEmbedBuilder(keyword, season, region, event_type).build()
             if event_embeds is None:
-                await interaction.response.send_message("FTCScout did not respond, check your query parameters to ", ephemeral=True)
+                await interaction.response.send_message("FTCScout did not respond, run `/pingscout` to check the API status.")
 
             elif type(event_embeds) == discord.Embed:
                 await interaction.response.send_message(embed=event_embeds)
