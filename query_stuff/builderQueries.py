@@ -5,6 +5,7 @@ from types import SimpleNamespace
 
 from misc.utils import GenericEventData, generate_event_data
 
+
 def _parse_query(query: str) -> SimpleNamespace | None:
     response = requests.post(url="https://api.ftcscout.org/graphql", json={"query": query})
     if response.status_code == 200:
@@ -15,11 +16,24 @@ def _parse_query(query: str) -> SimpleNamespace | None:
     else:
         return None
 
-def query_event(keyword: str, season: int, region: str, event_type: str) -> GenericEventData | None: # replace any when rtype is determined
+def ping_query() -> bool:
+    query: str = """
+{
+    teamByNumber(number: 21336) {
+        name
+    }
+}
+"""
+    data = _parse_query(query)
+    if data is None:
+        return False
 
+    return True
+
+def  query_event(key: str, season: int, region: str, event_type: str) -> list[GenericEventData] | None: # replace any when rtype is determined
     query = '''
 {
-    eventsSearch(searchText: "%s", season: %d, region: %s, type: %s) {
+    eventsSearch(searchText: "'''+key+'''", season: '''+str(season)+''', region: '''+region+''', type: '''+event_type+''') {
         name
         start
         end
@@ -34,20 +48,23 @@ def query_event(keyword: str, season: int, region: str, event_type: str) -> Gene
         }
         teams {
             teamNumber
-        {
+        }
         matches {
             matchNum
         }
+        code
     }
 }
-    ''' % (keyword, season, region, event_type) # bad method of formatting but others use {} so they won't work
+    '''
 
     data = _parse_query(query=query)
 
     if data is None:
         return None
 
-    return generate_event_data(data.eventsSearch[0])
+    catcher = data.eventsSearch[0] # raises IndexError if the query was successful but no events were found
+    return generate_event_data(data.eventsSearch)
+
 
 def query_event_awards(event_code: str, season: int):
     query = '''

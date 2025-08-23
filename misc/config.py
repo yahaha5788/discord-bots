@@ -59,7 +59,7 @@ def set_footer(embed: discord.Embed) -> None:
     this should be used after all embed fields are added.
     :param embed: The embed to add the links to.
     """
-    embed.add_field(name="-# Links", value="-# [FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
+    embed.add_field(name="", value="-# [FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
 
 
 # --------------- CATEGORIZED COMMANDS --------------------------#
@@ -110,7 +110,7 @@ def add_app_command(
         # apply choices
         if param_options:
             for param, options in param_options.items():
-                choices = [app_commands.Choice(name=n, value=v) for n, v in options]
+                choices = [app_commands.Choice(name=list(n.keys())[0], value=list(n.values())[0]) for n in options]
                 command = app_commands.choices(**{param.strip("<>"): choices})(command)
 
         if bot.guilds:

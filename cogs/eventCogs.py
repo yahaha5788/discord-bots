@@ -16,13 +16,14 @@ class EventCog(commands.Cog):
 
     async def cog_load(self) -> None:
         add_app_command(self.bot)(self.teamevents)
+        add_app_command(self.bot)(self.event)
         # addAppCommand(self.bot)(self.upcomingevents)
 
     @commandattrs(
         category="Events",
         usage="/event <keyword> <season> <region> <event_type>",
-        brief="",
-        description="",
+        brief="event",
+        description="event",
         param_guide={
             "<keyword>": "A keyword to use in the event search.",
             "<season>": "The season to search in.",
@@ -40,33 +41,30 @@ class EventCog(commands.Cog):
                          {"Super Qualifier": "SuperQualifier"}, {"Volunteer Signup": "VolunteerSignup"},
                          {"Workshop": "Workshop"}],
             "<region>": [{"All": "All"}, {"International": "International"}, {"United States": "UnitedStates"}, {"Ohio": "USOH"},
-                         {"Alaska": "USAK"}, {"Alabama": "USAL"}, {"Arkansas": "USAR"}, {"Arizona": "USAZ"}, {"California": "USCA"},
-                         {"Colorado": "USCO"}, {"Connecticut": "USCT"}, {"Delaware": "USDE"}, {"Florida": "USFL"},
-                         {"Georgia": "USGA"}, {"Hawaii": "USHI"}, {"Iowa": "USIA"}, {"Idaho": "USID"}, {"Illinois": "USIL"},
-                         {"Indiana": "USIN"}, {"Kentucky": "USKY"}, {"Louisiana": "USLA"}, {"Massachusetts": "USMA"},
-                         {"Maryland": "USMD"}, {"Michigan": "USMI"}, {"Minnesota": "USMN"}, {"Missouri & Kansas": "USMOKS"},
-                         {"Mississippi": "USMS"}, {"Montana": "USMT"}, {"North Carolina": "USNC"}, {"North Dakota": "USND"},
-                         {"Nebraska": "USNE"}, {"New Hampshire": "USNH"}, {"New Jersey": "USNJ"}, {"New Mexico": "USMX"},
-                         {"Nevada": "USNV"}, {"New York": "USNY"}, {"Oklahoma": "USOK"}, {"Oregon": "USOK"}, {"Pennsylvania": "USPA"},
-                         {"Rhode Island": "USRI"}, {"South Carolina": "USSC"}, {"Tennessee": "USTN"}, {"Texas": "USTX"},
-                         {"Utah": "USUT"}, {"Virginia": "USVA"}, {"Vermont": "USVT"}, {"Washington": "USWA"}, {"Wisconsin": "USWI"},
-                         {"West Virginia": "USWV"}, {"Wyoming": "USWY"}, {"Australia": "AU"}, {"Brazil": "BR"}, {"Alberta": "CAAB"},
+                         {"Australia": "AU"}, {"Brazil": "BR"}, {"Alberta": "CAAB"},
                          {"British Columbia": "CABC"}, {"Ontario": "CAON"}, {"Québec": "CAQC"}, {"China": "CN"}, {"Cyprus": "CY"},
                          {"Germany": "DE"}, {"Egypt": "EG"}, {"Spain": "ES"}, {"France": "FR"}, {"Great Britain": "GB"},
-                         {"Israel": "IL"}, {"India": "IN"}, {"Jamaica": "JM"}, {"South Korea": "KR"}, {"Kazakhstan": "KZ"},
-                         {"Libya": "LY"}, {"Mexico": "MX"}, {"Nigeria": "NG"}, {"Netherlands": "NL"}, {"New Zealand": "NZ"},
-                         {"Qatar": "QA"}, {"Romania": "RO"}, {"Russia": "RU"}, {"Saudi Arabia": "SA"}, {"Thailand": "TH"},
-                         {"Taiwan": "TW"}, {"South Africa": "ZA"}]
+                         {"Israel": "IL"}, {"India": "IN"}, {"Jamaica": "JM"},
+                         {"Libya": "LY"}, {"Mexico": "MX"}, {"Netherlands": "NL"}, {"Romania": "RO"}]
         },
         name="event"
     )
-    async def event(self, interaction: discord.Interaction, keyword: app_commands.Choice[str], season: app_commands.Choice[int], region: app_commands.Choice[str], event_type: app_commands.Choice[str]):
-        event_embed: discord.Embed | None = eventEmbedBuilders.EventEmbed(keyword.value, season.value, region.value, event_type.value).create()
-        if event_embed is None:
-            await interaction.response.send_message("https://ftcscout.org did not respond, run `/ping` to check the website status.")
+    async def event(self, interaction: discord.Interaction, keyword: str, season: int, region: str, event_type: str):
+        try:
+            event_embeds: discord.Embed | tuple[list[discord.Embed], discord.ui.View] | None = eventEmbedBuilders.EventEmbedBuilder(keyword, season, region, event_type).build()
+            if event_embeds is None:
+                await interaction.response.send_message("FTCScout did not respond, check your query parameters to ", ephemeral=True)
 
-        else:
-            await interaction.response.send_message(embed=event_embed)
+            elif type(event_embeds) == discord.Embed:
+                await interaction.response.send_message(embed=event_embeds)
+
+            else:
+                event_embeds: tuple[list[discord.Embed], discord.ui.View]
+                embeds: list[discord.Embed] = event_embeds[0]
+                view: discord.ui.View = event_embeds[1]
+                await interaction.response.send_message(embed=embeds[0], view=view)
+        except IndexError:
+            await interaction.response.send_message("No events found, check your query parameters.")
 
 
 

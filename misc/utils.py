@@ -38,21 +38,27 @@ class AwardCompilation(NamedTuple):
         return [award for award in self.awards if award.teamNumber == number]
 
 # -------------------------------- FORMATTING -------------------------------- #
-def generate_event_data(event: SimpleNamespace) -> GenericEventData:
-    loc: LocationData = _format_location(event.location)
+def generate_event_data(event) -> list[GenericEventData]:
+    gen_events: list[GenericEventData] = []
+    for ev in event:
+        loc: LocationData = _format_location(ev.location)
 
-    return GenericEventData(
-        event.name,
-        event.type,
-        event.start,
-        event.end,
-        event.started,
-        event.ongoing,
-        len(event.teams),
-        len(event.matches),
-        event.code,
-        loc
-    )
+        gen_events.append(
+            GenericEventData(
+                ev.name,
+                ev.type,
+                ev.start,
+                ev.end,
+                ev.started,
+                ev.ongoing,
+                len(ev.teams),
+                len(ev.matches),
+                ev.code,
+                loc
+            )
+        )
+
+    return gen_events
 
 def _format_location(loc: SimpleNamespace) -> LocationData:
     csc = f"{loc.city}, {loc.state}, {loc.country}."

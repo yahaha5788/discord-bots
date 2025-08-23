@@ -5,6 +5,7 @@ from discord import ButtonStyle, app_commands
 from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gather_app_commands, add_app_command, commandattrs, \
     CategorizedAppCommand, sort_category_commands, sort_all_commands, set_footer
 from misc.templates import format_usage
+from query_stuff import builderQueries
 
 
 class HelpCog(commands.Cog):
@@ -15,6 +16,7 @@ class HelpCog(commands.Cog):
     async def cog_load(self) -> None:
         add_app_command(self.bot)(self.help)
         add_app_command(self.bot)(self.intro)
+        add_app_command(self.bot)(self.pingscout)
 
     async def all_help(self, interaction: discord.Interaction):
         current_page = discord.Embed(
@@ -182,4 +184,18 @@ class HelpCog(commands.Cog):
         description = f"Welcome, {interaction.user.display_name}, to team 14988, Royal ⍴-botics!\nTo get started, type `/quickstats 14988`! That's our team's stats for the season. You can type /help for more commands.\n\nWe're excited to have you on the team, and we hope you have a great time!"
         intro_embed = discord.Embed(title=title, description=description, color=EMBED_COLOR)
         await interaction.response.send_message(embed=intro_embed, ephemeral=True)
+
+    @commandattrs(
+        name='pingscout',
+        description='Command to check if FTCScout is online.',
+        brief='Command to check if FTCScout is online.',
+        usage='/pingscout',
+        category='Help'
+    )
+    async def pingscout(self, interaction: discord.Interaction):
+        pinged: bool = builderQueries.ping_query()
+        if pinged:
+            await interaction.response.send_message("FTCScout is online.")
+        else:
+            await interaction.response.send_message("FTCScout did not respond.")
 

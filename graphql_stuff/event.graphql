@@ -1,11 +1,10 @@
 query {
-    eventsSearch(searchText: "NEOH", season: 2024, region: USOH, type: LeagueTournament) {
+    eventsSearch(searchText: "NEOH", season: 2024, region: USOH, type: LeagueMeet) {
         name
         start
         end
         started
         ongoing
-        finished
         type
         location {
             venue
@@ -19,6 +18,5 @@ query {
         matches {
             matchNum
         }
-        code
     }
 }
