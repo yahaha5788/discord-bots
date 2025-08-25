@@ -39,6 +39,11 @@ class AwardCompilation(NamedTuple):
 
 # -------------------------------- FORMATTING -------------------------------- #
 def generate_event_data(event) -> list[GenericEventData]:
+    """
+
+    :param event:
+    :return:
+    """
     gen_events: list[GenericEventData] = []
     for ev in event:
         loc: LocationData = _format_location(ev.location)

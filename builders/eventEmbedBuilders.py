@@ -1,11 +1,13 @@
 import discord
-from discord import ButtonStyle, SelectOption
 
 from misc.utils import GenericEventData, event_status
 from misc.config import EMBED_COLOR, set_footer
 from query_stuff import builderQueries
 
 class EventEmbedBuilder:
+    """
+    Class for making embed(s) to display event data.
+    """
     def __init__(self, keyword: str, season: int, region: str, event_type: str):
         self.keyword = keyword
         self.season = season
@@ -15,6 +17,10 @@ class EventEmbedBuilder:
         self.events: list[GenericEventData] | None = builderQueries.query_event(self.keyword, self.season, self.region, self.event_type)
 
     def build(self) -> discord.Embed | tuple[list[discord.Embed], discord.ui.View] | None: # type hint go brrr
+        """
+        Creates an event embed, either multiple embeds if the query results in multiple events, or a single embed if the query returns only one event
+        :return: A single ``discord.Embed``, or a list of ``discord.Embed`` and a ``discord.ui.View`` for selecting an event from the list of embeds
+        """
         if self.events is None:
             return None
 
@@ -32,6 +38,10 @@ class EventEmbed:
         self.event: GenericEventData | None = event
 
     def create(self) -> discord.Embed | None:
+        """
+        Creates a ``discord.Embed`` for an event
+        :return: a ``discord.Embed`` containing the event details
+        """
         if self.event is None:
             return None
 
@@ -52,6 +62,11 @@ class MultiEventEmbed:
         self.events: list[GenericEventData] | None = events
 
     def create(self) -> tuple[list[discord.Embed], discord.ui.View] | None:
+        """
+        Creates an embed that has a dropdown to select an event from a list.
+
+        :return: a ``tuple`` containing a list of ``discord.Embed`` and a ``discord.ui.View`` containing the dropdown for events.
+        """
         if self.events is None:
             return None
 
