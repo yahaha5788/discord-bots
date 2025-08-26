@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from cogs import basicCogs, competitonCogs, eventCogs, monitorCogs, recordCogs, statsCogs, helpCogs
+from cogs import basicCogs, competitonCogs, eventCogs, recordCogs, statsCogs, helpCogs
 
 from misc.config import ACTIVITY, STARTING
 
@@ -24,8 +24,6 @@ async def on_ready():
 
     await bot.add_cog(eventCogs.EventCog(bot))
     await bot.add_cog(eventCogs.QualificationCog(bot))
-
-    await bot.add_cog(monitorCogs.MonitorCog(bot))
     #
     await bot.add_cog(recordCogs.RecordCog(bot))
     #

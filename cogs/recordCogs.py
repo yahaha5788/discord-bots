@@ -1,3 +1,5 @@
+from typing import Optional
+
 import discord
 from discord.ext import commands
 from query_stuff import queries
@@ -21,9 +23,17 @@ class RecordCog(commands.Cog):
         param_guide={
             "<region>": "An optional argument for the region to search in. Defaults to All."
         },
+        param_options={
+            "<region>": [{"All": "All"}, {"International": "International"}, {"United States": "UnitedStates"},
+                         {"Ohio": "USOH"}, {"Australia": "AU"}, {"Brazil": "BR"}, {"Alberta": "CAAB"},
+                         {"British Columbia": "CABC"}, {"Ontario": "CAON"}, {"Québec": "CAQC"}, {"China": "CN"},
+                         {"Cyprus": "CY"}, {"Germany": "DE"}, {"Egypt": "EG"}, {"Spain": "ES"}, {"France": "FR"},
+                         {"Great Britain": "GB"}, {"Israel": "IL"}, {"India": "IN"}, {"Jamaica": "JM"},
+                         {"Libya": "LY"}, {"Mexico": "MX"}, {"Netherlands": "NL"}, {"Romania": "RO"}]
+        },
         name='bestteam'
     )
-    async def bestteam(self, interaction: discord.Interaction, region: str ='All'):
+    async def bestteam(self, interaction: discord.Interaction, region: Optional[str] = "All"):
         data, success = queries.best_team(region)
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
@@ -58,10 +68,17 @@ class RecordCog(commands.Cog):
         param_guide={
             "<region>": "An optional argument for the region to search in. Defaults to All."
         },
+        param_options={
+            "<region>": [{"All": "All"}, {"International": "International"}, {"United States": "UnitedStates"},
+                         {"Ohio": "USOH"}, {"Australia": "AU"}, {"Brazil": "BR"}, {"Alberta": "CAAB"},
+                         {"British Columbia": "CABC"}, {"Ontario": "CAON"}, {"Québec": "CAQC"}, {"China": "CN"},
+                         {"Cyprus": "CY"}, {"Germany": "DE"}, {"Egypt": "EG"}, {"Spain": "ES"}, {"France": "FR"},
+                         {"Great Britain": "GB"}, {"Israel": "IL"}, {"India": "IN"}, {"Jamaica": "JM"},
+                         {"Libya": "LY"}, {"Mexico": "MX"}, {"Netherlands": "NL"}, {"Romania": "RO"}]
+        },
         name='worldrecord'
     )
-    async def worldrecord(self, interaction: discord.Interaction, region: str ='All'):
-        await interaction.response.defer()
+    async def worldrecord(self, interaction: discord.Interaction, region: Optional[str] ='All'):
         data, success = queries.best_match(region)
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)
@@ -78,5 +95,5 @@ class RecordCog(commands.Cog):
 
         set_footer(scores_embed)
 
-        await interaction.followup.send(embed=scores_embed)
+        await interaction.response.send_message(embed=scores_embed)
 
