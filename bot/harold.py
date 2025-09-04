@@ -11,8 +11,6 @@ intents.members = True
 
 bot = commands.Bot(command_prefix='h$', intents=intents, activity=STARTING)
 
-
-
 @bot.event
 async def on_ready():
     for cog in bot.cogs: # eat some leftovers
@@ -42,7 +40,7 @@ async def on_ready():
         except Exception as e:
             print(f"Failed to sync commands to guild {guild.name} ({guild.id}): {e}")
 
-    help_cog.wrap_all_commands(bot.guilds[0])
+    help_cog.wrap_all_commands()
 
     await bot.change_presence(activity=ACTIVITY)
     print('Bot is ready')

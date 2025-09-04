@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord import ButtonStyle, app_commands
+from discord import ButtonStyle
 
 from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gather_app_commands, add_app_command, commandattrs, \
     CategorizedAppCommand, sort_category_commands, sort_all_commands, set_footer
@@ -15,11 +15,10 @@ class HelpCog(commands.Cog):
 
     async def cog_load(self) -> None:
         add_app_command(self.bot)(self.help)
-        add_app_command(self.bot)(self.intro)
         add_app_command(self.bot)(self.pingscout)
 
-    def wrap_all_commands(self, guild: discord.Guild):
-        self.commands = [CategorizedAppCommand(command) for command in self.bot.tree.get_commands(guild=guild)]
+    def wrap_all_commands(self):
+        self.commands = [CategorizedAppCommand(command) for command in self.bot.tree.get_commands()]
 
     async def all_help(self, interaction: discord.Interaction):
         current_page = discord.Embed(
@@ -83,7 +82,8 @@ class HelpCog(commands.Cog):
 
         await interaction.response.send_message(embed=pages[0], view=help_view)
 
-    async def command_help(self, interaction: discord.Interaction, command: CategorizedAppCommand):
+    @staticmethod
+    async def command_help(interaction: discord.Interaction, command: CategorizedAppCommand):
         title = f"/{command.name}"
         help_embed = discord.Embed(title=title, color=EMBED_COLOR)
 
@@ -97,7 +97,8 @@ class HelpCog(commands.Cog):
 
         await interaction.response.send_message(embed=help_embed)
 
-    async def category_help(self, interaction: discord.Interaction, commands_in_category, category):
+    @staticmethod
+    async def category_help(interaction: discord.Interaction, commands_in_category, category):
         current_page = discord.Embed(
             title=f"{category} Commands",
             description=f"Type `/help <command>` for help on a specific command.",
@@ -174,19 +175,6 @@ class HelpCog(commands.Cog):
                 await interaction.response.send_message("That is not a valid command or category name.")
         else:
             await self.all_help(interaction)
-
-    @commandattrs(
-        name='intro',
-        description='Intro command for new users.',
-        brief='Introduction command.',
-        usage='/intro',
-        category='Help'
-    )
-    async def intro(self, interaction: discord.Interaction):
-        title = f"Welcome, {interaction.user.display_name}!"
-        description = f"Welcome, {interaction.user.display_name}, to team 14988, Royal ⍴-botics!\nTo get started, type `/quickstats 14988`! That's our team's stats for the season. You can type /help for more commands.\n\nWe're excited to have you on the team, and we hope you have a great time!"
-        intro_embed = discord.Embed(title=title, description=description, color=EMBED_COLOR)
-        await interaction.response.send_message(embed=intro_embed, ephemeral=True)
 
     @commandattrs(
         name='pingscout',

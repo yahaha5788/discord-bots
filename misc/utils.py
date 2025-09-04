@@ -1,132 +1,56 @@
-from typing import NamedTuple
-from types import SimpleNamespace
+import discord
 
-# -------------------------- NAMEDTUPLE --------------------------------- #
-class LocationData(NamedTuple):
-    cityStateCountry: str
-    venue: str = None
+from http.client import responses
 
 
-class QuickStat(NamedTuple):
-    rank: int
-    value: int
-
-class QuickStats(NamedTuple):
-    auto: QuickStat
-    tele: QuickStat
-    endgame: QuickStat
-    total: QuickStat
-
-class GenericEventData(NamedTuple):
-    name: str
-    event_type: str
-    start: str
-    end: str
-
-    started: bool
-    ongoing: bool
-
-    team_quantity: int
-    match_quantity: int
-
-    event_code: str
-
-    location: LocationData
-
-class AwardData(NamedTuple):
-    placement: int
-    team_name: str
-    team_number: str
-    type: str
-
-class AwardCompilation(NamedTuple):
-    awards: list[AwardData]
-
-    def sortByType(self) -> list[AwardData]:
-        return sorted(self.awards, key=lambda a: a.type.lower())
-
-    def getTeamAwards(self, number: int) -> list[AwardData]:
-        return [award for award in self.awards if award.team_number == number]
-
-class TeamData(NamedTuple):
-    name: str
-    number: str
-    website: str
-
-    location: LocationData
-    quickstats: QuickStats
-
-# -------------------------------- FORMATTING -------------------------------- #
-def generate_event_data(event) -> list[GenericEventData]:
+def get_code_desc(code: int) -> str:
     """
-
-    :param event:
-    :return:
+    Gets the description of an HTTP code.
+    :param code: The code to get the description of.
+    :return: The description of the code.
     """
-    gen_events: list[GenericEventData] = []
-    for ev in event:
-        loc: LocationData = _format_location(ev.location)
+    desc: str = responses[code]
+    return desc
 
-        gen_events.append(
-            GenericEventData(
-                ev.name,
-                ev.type,
-                ev.start,
-                ev.end,
-                ev.started,
-                ev.ongoing,
-                len(ev.teams),
-                len(ev.matches),
-                ev.code,
-                loc
-            )
-        )
-
-    return gen_events
-
-def generate_award_data(award) -> AwardData:
+def append_suffix(num: int) -> str:
     """
-
-    :param award:
-    :return:
+    Append the corresponding suffix ("th", "st", "rd", or "nd") to a given number.
+    e.g. 45 -> 45th, 3 -> 3rd, 91 -> 91st, 72 -> 72nd.
+    :param num: The number to append to.
+    :return: The number and its appended suffix.
     """
-    return AwardData(
-        award.placement,
-        award.team.name,
-        award.team.number,
-        award.type
-    )
+    if num < 10 or num > 19: # 10 - 19 all end in 'th'
+        number: list[str] = list(str(num))
+        lastchar: str = number[len(number) - 1]
+        match lastchar:
+            case '1':
+                suf = 'st'
+            case '2':
+                suf = 'nd'
+            case '3':
+                suf = 'rd'
+            case _:
+                suf = 'th'
+    else: suf = 'th'
 
-def generate_team_data(team) -> TeamData:
-    return TeamData(
-        team.name,
-        team.number,
-        team.website,
-        _format_location(team.location),
-        _format_qstats(team.quickStats)
-    )
+    appended = f'{num}{suf}'
+    return appended
 
-def _format_location(loc: SimpleNamespace) -> LocationData:
-    csc = f"{loc.city}, {loc.state}, {loc.country}."
-    if getattr(loc, 'venue', None) is None:
-        return LocationData(csc)
-
-    return LocationData(csc, loc.venue)
-
-def _format_qstats(quickstats: SimpleNamespace) -> QuickStats:
-    auto_ns = quickstats.auto
-    tele_ns = quickstats.tele
-    endgame_ns = quickstats.endgame
-    total_ns = quickstats.tot
-
-    return QuickStats(
-        QuickStat(auto_ns.rank, auto_ns.value),
-        QuickStat(tele_ns.rank, tele_ns.value),
-        QuickStat(endgame_ns.rank, endgame_ns.value),
-        QuickStat(total_ns.rank, total_ns.value)
-    ) # the stats are quite quick indeed
+def set_footer(embed: discord.Embed) -> None:
+    """
+    Gives links to put at the bottom of an embed. Since links don't work in the footer field of an embed,
+    this should be used after all embed fields are added.
+    :param embed: The embed to add the links to.
+    """
+    embed.add_field(name="", value="-# [FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
 
 def event_status(started: bool, ongoing: bool) -> str:
+    """
+    Determines the status of an event.
+    :param started: If the event has started.
+    :param ongoing: If the event is currently ongoing.
+    :return: A string describing the event's current status.
+    """
     if started:
         if ongoing:
             return "This event is ongoing."
@@ -134,4 +58,3 @@ def event_status(started: bool, ongoing: bool) -> str:
             return "This event has finished."
     else:
         return "This event has not started."
-

@@ -1,7 +1,7 @@
 import discord
 from discord import ButtonStyle, SelectOption
 
-from misc.utils import GenericEventData, event_status, AwardCompilation, AwardData
+from misc.datatemplates import GenericEventData, event_status, AwardCompilation, AwardData
 from misc.config import EMBED_COLOR, set_footer, AWARD_DESCRIPTIONS
 from query_stuff.builderQueries import query_event_awards
 
@@ -17,8 +17,8 @@ class EventAwardsEmbed:
 
 class AwardEmbed:
     def __init__(self, award: AwardData):
-        self.name = award.teamName
-        self.number = award.teamNumber
+        self.name = award.team_name
+        self.number = award.team_number
         self.placement = award.placement
         self.type = award.type
         self.desc = AWARD_DESCRIPTIONS[award.type] # raises  if the award type isn't in the dict, used to weed out Winner and Finalist awards among some others

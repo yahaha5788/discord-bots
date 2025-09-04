@@ -18,8 +18,8 @@ class HelpCog(commands.Cog):
         add_app_command(self.bot)(self.intro)
         add_app_command(self.bot)(self.pingscout)
 
-    def wrap_all_commands(self, guild: discord.Guild):
-        self.commands = [CategorizedAppCommand(command) for command in self.bot.tree.get_commands(guild=guild)]
+    def wrap_all_commands(self):
+        self.commands = [CategorizedAppCommand(command) for command in self.bot.tree.get_commands()]
 
     async def all_help(self, interaction: discord.Interaction):
         current_page = discord.Embed(

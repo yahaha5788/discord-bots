@@ -47,10 +47,10 @@ def get_code_desc(code: int) -> str:
     return desc
 
 def append_suffix(num: int) -> str:
-    number = str(num)
-    number = list("".join(number))[len(list("".join(number))) - 1] # muahahaha
     if num < 10 or num > 19: # 10 - 19 all end in 'th'
-        match number:
+        number: list[str] = list(str(num))
+        lastchar: str = number[len(number) - 1]
+        match lastchar:
             case '1':
                 suf = 'st'
             case '2':
@@ -61,8 +61,8 @@ def append_suffix(num: int) -> str:
                 suf = 'th'
     else: suf = 'th'
 
-    fin = f'{num}{suf}'
-    return fin
+    appended = f'{num}{suf}'
+    return appended
 
 def set_footer(embed: discord.Embed) -> None:
     """
@@ -150,8 +150,8 @@ def add_app_command(
         return command
     return decorator
 
-class CategorizedAppCommand: # basically just wraps every command when the help function is run
-    def __init__(self, command): # TODO: OPTIMIZE- WRAP ALL COMMANDS ON START AND USE INSTEAD OF WRAPPING EVERY TIME /HELP IS RUN
+class CategorizedAppCommand:
+    def __init__(self, command):
         self.command = command
         self.name, self.description, self.category, self.usage, self.brief, self.param_guide, self.param_options = gather_command_attrs(command)
 

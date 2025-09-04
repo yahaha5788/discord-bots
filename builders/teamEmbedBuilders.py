@@ -1,6 +1,6 @@
 import discord
 
-from misc.utils import TeamData
+from misc.datatemplates import TeamData
 from misc.config import EMBED_COLOR, set_footer, append_suffix
 from query_stuff import builderQueries
 

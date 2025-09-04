@@ -1,37 +1,29 @@
 import discord
 
-from misc.utils import GenericEventData, event_status
-from misc.config import EMBED_COLOR, set_footer
+from misc.datatemplates import GenericEventData
+from misc.cfg import EMBED_COLOR, E
+from misc.utils import set_footer, event_status
 from query_stuff import builderQueries
 
-class EventEmbedBuilder:
+def build_embed(keyword: str, season: int, region: str, event_type: str):
     """
-    Class for making embed(s) to display event data.
+    Creates an event embed, either multiple embeds if the query results in multiple events, or a single embed if the query returns only one event
+    :return: A ``discord.Embed`` and a ``discord.ui.View``
     """
-    def __init__(self, keyword: str, season: int, region: str, event_type: str):
-        self.keyword = keyword
-        self.season = season
-        self.region = region
-        self.event_type = event_type
+    events: list[GenericEventData] | None = builderQueries.query_event(keyword, season, region, event_type)
 
-        self.events: list[GenericEventData] | None = builderQueries.query_event(self.keyword, self.season, self.region, self.event_type)
+    if events is None:
+        return None
 
-    def build(self) -> discord.Embed | tuple[list[discord.Embed], discord.ui.View] | None: # type hint go brrr
-        """
-        Creates an event embed, either multiple embeds if the query results in multiple events, or a single embed if the query returns only one event
-        :return: A single ``discord.Embed``, or a list of ``discord.Embed`` and a ``discord.ui.View`` for selecting an event from the list of embeds
-        """
-        if self.events is None:
-            return None
+    elif len(events) == 1:
+        embed = EventEmbed(events[0]).create()
 
-        elif len(self.events) == 1:
-            embed = EventEmbed(self.events[0]).create()
+        return embed
 
-            return embed
+    else:
 
-        else:
+        return MultiEventEmbed(events).create()
 
-            return MultiEventEmbed(self.events).create()
 
 class EventEmbed:
     def __init__(self, event: GenericEventData | None):
@@ -61,7 +53,7 @@ class MultiEventEmbed:
     def __init__(self, events: list[GenericEventData] | None):
         self.events: list[GenericEventData] | None = events
 
-    def create(self) -> tuple[list[discord.Embed], discord.ui.View] | None:
+    def create(self) -> E:
         """
         Creates an embed that has a dropdown to select an event from a list.
 
@@ -93,4 +85,4 @@ class MultiEventEmbed:
         select_view = discord.ui.View(timeout=60)
         select_view.add_item(event_select)
 
-        return pages, select_view
+        return pages[0], select_view

@@ -21,7 +21,8 @@ class RecordCog(commands.Cog):
         brief="Gets the best team from ftcscout.org",
         usage=f"/bestteam <region>",
         param_guide={
-            "<region>": "An optional argument for the region to search in. Defaults to All."
+            "<region>": "An optional argument for the region to search in. Defaults to All.",
+            "<season>": ""
         },
         param_options={
             "<region>": [{"All": "All"}, {"International": "International"}, {"United States": "UnitedStates"},
@@ -33,7 +34,7 @@ class RecordCog(commands.Cog):
         },
         name='bestteam'
     )
-    async def bestteam(self, interaction: discord.Interaction, region: Optional[str] = "All"):
+    async def bestteam(self, interaction: discord.Interaction, season: int, region: Optional[str] = "All"):
         data, success = queries.best_team(region)
         if not success:
             embed = discord.Embed(description=data, color=EMBED_COLOR)

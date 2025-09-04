@@ -3,7 +3,7 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.utils import GenericEventData, generate_event_data, AwardCompilation, generate_award_data, TeamData, generate_team_data
+from misc.datatemplates import GenericEventData, generate_event_data, AwardCompilation, generate_award_data, TeamData, generate_team_data
 
 
 def _parse_query(query: str) -> SimpleNamespace | None:

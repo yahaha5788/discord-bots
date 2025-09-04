@@ -4,8 +4,10 @@ from discord.ext import commands
 from discord import Interaction
 import discord
 from random import randint, choice
-from misc.config import EMBED_COLOR, CHOICES, commandattrs, add_app_command, set_footer
 
+from misc.cfg import EMBED_COLOR, CHOICES
+from misc.utils import set_footer
+from misc.cmdutils import add_app_command, commandattrs
 
 class FunCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
