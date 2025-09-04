@@ -1,5 +1,30 @@
 {
     teamByNumber(number: 14988) {
         name
+        number
+        location {
+            city
+            state
+            country
+        }
+        website
+        quickStats(season: 2024) {
+            auto {
+                rank
+                value
+            }
+            tele: dc {
+                rank
+                value
+            }
+            endgame: eg {
+                rank
+                value
+            }
+            tot {
+                rank
+                value
+            }
+        }
     }
 }
