@@ -4,6 +4,7 @@ import requests
 from types import SimpleNamespace
 
 from misc.datatemplates import GenericEventData, generate_event_data, AwardCompilation, generate_award_data, TeamData, generate_team_data
+from misc.utils import QueryFailException
 
 
 def _parse_query(query: str) -> SimpleNamespace | None:
@@ -14,7 +15,7 @@ def _parse_query(query: str) -> SimpleNamespace | None:
         return data.data
 
     else:
-        return None
+        raise QueryFailException("FTCScout API did not respond.")
 
 def ping_query() -> bool:
     query: str = """
@@ -22,13 +23,14 @@ def ping_query() -> bool:
     activeTeamsCount(season: 2024)
 }
 """
-    data = _parse_query(query)
-    if data is None:
+    try:
+        _parse_query(query)
+    except QueryFailException:
         return False
 
     return True
 
-def query_event(key: str, season: int, region: str, event_type: str) -> list[GenericEventData] | None:
+def query_event(key: str, season: int, region: str, event_type: str) -> list[GenericEventData]:
     query = '''
 {
     eventsSearch(searchText: "'''+key+'''", season: '''+str(season)+''', region: '''+region+''', type: '''+event_type+''') {
@@ -57,14 +59,13 @@ def query_event(key: str, season: int, region: str, event_type: str) -> list[Gen
 
     data = _parse_query(query=query)
 
-    if data is None:
-        return None
+    if not data.eventsSearch:
+        raise QueryFailException("FTCScout did not return any events, check your query parameters.")
 
-    catcher = data.eventsSearch[0] # raises IndexError if the query was successful but no events were found
     return generate_event_data(data.eventsSearch)
 
 
-def query_event_awards(event_code: str, season: int) -> AwardCompilation | None:
+def query_event_awards(event_code: str, season: int) -> AwardCompilation:
     query = '''
 {
     eventByCode(code: "'''+event_code+''''", season: '''+str(season)+''') {
@@ -82,15 +83,13 @@ def query_event_awards(event_code: str, season: int) -> AwardCompilation | None:
 
     data = _parse_query(query=query)
 
-    if data is None:
-        return None
-
     event_awards = data.eventByCode.awards
     awards = [generate_award_data(award) for award in event_awards]
 
     return AwardCompilation(awards)
 
-def query_team_data(number: int) -> TeamData | None:
+
+def query_team_data(number: int) -> TeamData:
     query = '''
 {
     team: teamByNumber(number: '''+str(number)+''') {
@@ -126,9 +125,8 @@ def query_team_data(number: int) -> TeamData | None:
 
     data = _parse_query(query=query)
 
-    if data is None:
-        return None
+    if data.team is None:
+        raise QueryFailException("No team was found, make sure you input the correct number.")
 
-    team = data.team
+    return generate_team_data(data.team)
 
-    return generate_team_data(team)

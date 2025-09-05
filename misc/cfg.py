@@ -58,5 +58,3 @@ EVENT_OPTIONS: Final[list[dict[str, str]]] = [
     {"Super Qualifier": "SuperQualifier"}, {"Volunteer Signup": "VolunteerSignup"},
     {"Workshop": "Workshop"}
 ]
-
-E = TypeVar('E', None, tuple[discord.Embed, discord.ui.View])

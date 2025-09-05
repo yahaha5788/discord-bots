@@ -4,7 +4,8 @@ from discord.ext import commands
 from builders import eventEmbedBuilders
 
 from misc.cmdutils import commandattrs, add_app_command
-from misc.cfg import SEASON_OPTIONS, REGION_OPTIONS, EVENT_OPTIONS, E
+from misc.cfg import SEASON_OPTIONS, REGION_OPTIONS, EVENT_OPTIONS
+from misc.utils import QueryFailException
 
 
 class EventCog(commands.Cog):
@@ -34,13 +35,10 @@ class EventCog(commands.Cog):
     )
     async def event(self, interaction: discord.Interaction, keyword: str, season: int, region: str, event_type: str):
         try:
-            message_content: E = eventEmbedBuilders.build_embed(keyword, season, region, event_type)
-            if message_content is None:
-                await interaction.response.send_message("FTCScout did not respond, run `/pingscout` to check the API status.")
+            message_content: tuple[discord.Embed, discord.ui.View] = eventEmbedBuilders.build_embed(keyword, season, region, event_type)
 
-            else:
-                embed: discord.Embed = message_content[0]
-                view: discord.ui.View = message_content[1]
-                await interaction.response.send_message(embed=embed, view=view)
-        except IndexError:
-            await interaction.response.send_message("No events found, check your query parameters.")
+            embed: discord.Embed = message_content[0]
+            view: discord.ui.View = message_content[1]
+            await interaction.response.send_message(embed=embed, view=view)
+        except QueryFailException as e:
+            await interaction.response.send_message(e)

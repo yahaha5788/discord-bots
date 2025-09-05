@@ -58,3 +58,7 @@ def event_status(started: bool, ongoing: bool) -> str:
             return "This event has finished."
     else:
         return "This event has not started."
+
+class QueryFailException(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
