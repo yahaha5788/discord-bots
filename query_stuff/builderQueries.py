@@ -3,7 +3,8 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.datatemplates import GenericEventData, generate_event_data, AwardCompilation, generate_award_data, TeamData, generate_team_data
+from misc.data.templates import GenericEventData, AwardCompilation, GenericTeamData
+from misc.data.generation import generate_team_data, generate_event_data, generate_award_data
 from misc.utils import QueryFailException
 
 
@@ -89,7 +90,7 @@ def query_event_awards(event_code: str, season: int) -> AwardCompilation:
     return AwardCompilation(awards)
 
 
-def query_team_data(number: int) -> TeamData:
+def query_team_data(number: int) -> GenericTeamData:
     query = '''
 {
     team: teamByNumber(number: '''+str(number)+''') {

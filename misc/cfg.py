@@ -1,4 +1,4 @@
-from typing import Final, TypeVar
+from typing import Final
 
 import discord
 

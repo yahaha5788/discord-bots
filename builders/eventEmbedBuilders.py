@@ -1,7 +1,7 @@
 import discord
 from discord import ButtonStyle, WebhookMessage
 
-from misc.datatemplates import GenericEventData
+from misc.data.templates import GenericEventData
 from misc.cfg import EMBED_COLOR
 from misc.utils import set_footer, event_status
 from query_stuff import builderQueries
@@ -13,26 +13,12 @@ def build_embed(keyword: str, season: int, region: str, event_type: str) -> tupl
     """
     events: list[GenericEventData] = builderQueries.query_event(keyword, season, region, event_type)
 
-    if len(events) == 1:
-        return EventEmbed(events[0]).create()
-
-    else:
-        return MultiEventEmbed(events).create()
+    return MultiEventEmbed(events).create()
 
 
 class EventEmbed:
     def __init__(self, event: GenericEventData):
         self.event: GenericEventData = event
-
-    def create(self) -> tuple[discord.Embed, discord.ui.View]:
-        """
-        Creates a ``discord.Embed`` for an event
-        :return: a ``discord.Embed`` containing the event details
-        """
-
-        embed = self.create_embed()
-
-        return embed
 
     def create_embed(self) -> discord.Embed:
         title = f"**{self.event.name}, at {self.event.location.venue} in {self.event.location.cityStateCountry}**"
@@ -64,7 +50,9 @@ class MultiEventEmbed:
         page_events: list[GenericEventData] = self.events
         current_index = 0
         current_event = page_events[current_index]
-        awards_shown, teams_shown, matches_shown = False
+        awards_shown = False
+        teams_shown = False
+        matches_shown = False
         award_message: WebhookMessage
         team_message: WebhookMessage
         match_message: WebhookMessage

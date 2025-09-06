@@ -1,4 +1,5 @@
 from harold import bot as harold
+from newharold import bot as newharold
 from dotenv import load_dotenv
 import os
 import logging
@@ -11,4 +12,4 @@ if __name__ == '__main__':
 
     harold_key = os.getenv('HAROLD_KEY')
 
-    harold.run(harold_key, log_handler=handler, log_level=logging.DEBUG)
+    newharold.run(harold_key, log_handler=handler, log_level=logging.DEBUG)

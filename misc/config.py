@@ -2,7 +2,7 @@ from http.client import responses
 from typing import Final, Optional, Any
 
 import discord
-from discord import app_commands, ButtonStyle
+from discord import app_commands
 from discord.ext import commands
 
 # ------------------ FINALS ----------------------#

@@ -1,6 +1,6 @@
 import discord
 
-from misc.datatemplates import TeamData
+from misc.data.templates import GenericTeamData
 from misc.config import EMBED_COLOR, set_footer, append_suffix
 from query_stuff import builderQueries
 
@@ -10,7 +10,7 @@ class EventTeamEmbed:
 
 class TeamEmbed:
     def __init__(self, number: int):
-        self.team: TeamData | None = builderQueries.query_team_data(number)
+        self.team: GenericTeamData | None = builderQueries.query_team_data(number)
 
     def create(self) -> discord.Embed | None:
         if self.team is None:
