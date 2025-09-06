@@ -62,11 +62,13 @@ class MultiEventEmbed:
         async def awards_callback(interaction: discord.Interaction):
             nonlocal current_event, awards_shown, award_message
 
-            if awards_shown:
+            await interaction.response.defer()
+
+            if not awards_shown:
                 query_awards_button.style = ButtonStyle.grey
                 award_message = await interaction.followup.send(f"awards {current_event.name}", wait=True)
             else:
-                query_awards_button.style = ButtonStyle.premium
+                query_awards_button.style = ButtonStyle.green
                 await award_message.delete()
 
             awards_shown = not awards_shown
@@ -76,11 +78,13 @@ class MultiEventEmbed:
         async def teams_callback(interaction: discord.Interaction):
             nonlocal current_event, teams_shown, team_message
 
-            if teams_shown:
+            await interaction.response.defer()
+
+            if not teams_shown:
                 query_teams_button.style = ButtonStyle.grey
                 team_message = await interaction.followup.send(f"teams {current_event.name}", wait=True)
             else:
-                query_teams_button.style = ButtonStyle.premium
+                query_teams_button.style = ButtonStyle.green
                 await team_message.delete()
 
             teams_shown = not teams_shown
@@ -90,19 +94,21 @@ class MultiEventEmbed:
         async def matches_callback(interaction: discord.Interaction):
             nonlocal current_event, matches_shown, match_message
 
-            if matches_shown:
+            await interaction.response.defer()
+
+            if not matches_shown:
                 query_matches_button.style = ButtonStyle.grey
-                match_message = await interaction.followup.send(f"awards {current_event.name}", wait=True)
+                match_message = await interaction.followup.send(f"matches {current_event.name}", wait=True)
             else:
-                query_matches_button.style = ButtonStyle.premium
+                query_matches_button.style = ButtonStyle.green
                 await match_message.delete()
 
             matches_shown = not matches_shown
             await interaction.response.defer()
 
-        query_awards_button = discord.ui.Button(label="Awards", style=ButtonStyle.premium)
-        query_teams_button = discord.ui.Button(label="Teams", style=ButtonStyle.premium)
-        query_matches_button = discord.ui.Button(label="Matches", style=ButtonStyle.premium)
+        query_awards_button = discord.ui.Button(label="Awards", style=ButtonStyle.green)
+        query_teams_button = discord.ui.Button(label="Teams", style=ButtonStyle.green)
+        query_matches_button = discord.ui.Button(label="Matches", style=ButtonStyle.green)
 
         query_awards_button.callback = awards_callback
         query_teams_button.callback = teams_callback
@@ -123,10 +129,10 @@ class MultiEventEmbed:
 
             if awards_shown:
                 await award_message.edit(content=f"awards {current_event.name}")
-            elif teams_shown:
-                await award_message.edit(content=f"teams {current_event.name}")
-            elif matches_shown:
-                await award_message.edit(content=f"matches {current_event.name}")
+            if teams_shown:
+                await team_message.edit(content=f"teams {current_event.name}")
+            if matches_shown:
+                await match_message.edit(content=f"matches {current_event.name}")
 
             await interaction.response.defer()
 

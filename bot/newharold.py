@@ -33,6 +33,7 @@ async def on_ready():
             print(f"Failed to sync commands to guild {guild.name} ({guild.id}): {e}")
 
     help_cog.wrap_all_commands()
+    print(help_cog.commands)
 
     await bot.change_presence(activity=ACTIVITY)
     print('Bot is ready')
