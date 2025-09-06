@@ -2,8 +2,8 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.templates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores, EventDates
-from misc.config import get_code_desc, append_suffix
+from util.templates import QuickStats, Location, Event, EventStats, Team, Award, MatchScores, EventDates
+from util.config import get_code_desc, append_suffix
 
 def parseQuery(query) -> tuple[bool, SimpleNamespace] | tuple[bool, str]:
     response = requests.post(url="https://api.ftcscout.org/graphql", json={"query": query})

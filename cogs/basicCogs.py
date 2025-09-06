@@ -2,7 +2,7 @@ from discord.ext import commands
 from discord import Interaction, app_commands
 import discord
 from random import randint, choice
-from misc.config import EMBED_COLOR, CHOICES, commandattrs, add_app_command, set_footer
+from util.config import EMBED_COLOR, CHOICES, commandattrs, add_app_command, set_footer
 
 
 class FunCog(commands.Cog):

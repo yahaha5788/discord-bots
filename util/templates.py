@@ -1,5 +1,5 @@
 from typing import NamedTuple, Union
-from misc.config import append_suffix
+from util.config import append_suffix
 import discord
 
 # namedtuples go brrr

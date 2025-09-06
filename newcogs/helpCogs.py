@@ -2,9 +2,9 @@ import discord
 from discord.ext import commands
 from discord import ButtonStyle
 
-from misc.config import EMBED_COLOR, CHARACTER_LIMIT, gather_app_commands, add_app_command, commandattrs, \
+from util.config import EMBED_COLOR, CHARACTER_LIMIT, gather_app_commands, add_app_command, commandattrs, \
     CategorizedAppCommand, sort_category_commands, sort_all_commands, set_footer
-from misc.templates import format_usage
+from util.templates import format_usage
 from query_stuff import builderQueries
 
 

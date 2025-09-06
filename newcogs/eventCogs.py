@@ -3,9 +3,9 @@ from discord.ext import commands
 
 from builders import eventEmbedBuilders
 
-from misc.cmdutils import commandattrs, add_app_command
-from misc.cfg import SEASON_OPTIONS, REGION_OPTIONS, EVENT_OPTIONS
-from misc.utils import QueryFailException
+from util.cmdutils import commandattrs, add_app_command
+from util.cfg import SEASON_OPTIONS, REGION_OPTIONS, EVENT_OPTIONS
+from util.utils import QueryFailException
 
 
 class EventCog(commands.Cog):

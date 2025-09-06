@@ -4,7 +4,6 @@ class LocationData(NamedTuple):
     cityStateCountry: str
     venue: str = None
 
-
 class QuickStat(NamedTuple):
     rank: int
     value: int
@@ -14,6 +13,14 @@ class QuickStats(NamedTuple):
     tele: QuickStat
     endgame: QuickStat
     total: QuickStat
+
+class GenericTeamData(NamedTuple):
+    name: str
+    number: str
+    website: str
+
+    location: LocationData
+    quickstats: QuickStats
 
 class GenericEventData(NamedTuple):
     name: str
@@ -32,9 +39,8 @@ class GenericEventData(NamedTuple):
     location: LocationData
 
 class GenericAwardData(NamedTuple):
-    placement: int
-    team_name: str
-    team_number: str
+    first_place_team: GenericTeamData
+    second_place_team: GenericTeamData | None
     type: str
 
 class AwardCompilation(NamedTuple):
@@ -46,10 +52,3 @@ class AwardCompilation(NamedTuple):
     def getTeamAwards(self, number: int) -> list[GenericAwardData]:
         return [award for award in self.awards if award.team_number == number]
 
-class GenericTeamData(NamedTuple):
-    name: str
-    number: str
-    website: str
-
-    location: LocationData
-    quickstats: QuickStats

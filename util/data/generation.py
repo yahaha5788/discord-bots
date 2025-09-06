@@ -1,6 +1,6 @@
 from types import SimpleNamespace
 
-from misc.data.templates import GenericEventData, GenericAwardData, GenericTeamData, LocationData, QuickStats, QuickStat
+from util.data.templates import GenericEventData, GenericAwardData, GenericTeamData, LocationData, QuickStats, QuickStat
 
 
 def generate_event_data(event) -> list[GenericEventData]:

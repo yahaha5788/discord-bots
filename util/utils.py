@@ -42,7 +42,7 @@ def set_footer(embed: discord.Embed) -> None:
     this should be used after all embed fields are added.
     :param embed: The embed to add the links to.
     """
-    embed.add_field(name="", value="-# [FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots)", inline=False)
+    embed.add_field(name="", value="-# [FTCScout](https://ftcscout.org/) | [API Link](https://api.ftcscout.org/graphql) | [Github Repository](https://github.com/yahaha5788/discord-bots/tree/harold)", inline=False)
 
 def event_status(started: bool, ongoing: bool) -> str:
     """

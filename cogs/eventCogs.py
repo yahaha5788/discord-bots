@@ -6,8 +6,8 @@ from builders import eventEmbedBuilders
 from query_stuff import queries
 from query_stuff.queries import name_from_number
 
-from misc.templates import eventTemplate
-from misc.config import EMBED_COLOR, set_footer, commandattrs, add_app_command
+from util.templates import eventTemplate
+from util.config import EMBED_COLOR, set_footer, commandattrs, add_app_command
 
 
 class EventCog(commands.Cog):

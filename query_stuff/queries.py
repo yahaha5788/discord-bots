@@ -1,5 +1,5 @@
 from query_stuff import queryUtils
-from misc.templates import *
+from util.templates import *
 from types import SimpleNamespace
 
 #from .queryUtils import formatEventInfo, formatTeamEventData

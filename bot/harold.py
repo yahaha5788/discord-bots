@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from cogs import basicCogs, competitonCogs, eventCogs, recordCogs, statsCogs, helpCogs
 
-from misc.config import ACTIVITY, STARTING
+from util.config import ACTIVITY, STARTING
 
 intents = discord.Intents.default()
 intents.message_content = True

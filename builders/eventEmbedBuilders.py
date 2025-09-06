@@ -1,9 +1,9 @@
 import discord
 from discord import ButtonStyle, WebhookMessage
 
-from misc.data.templates import GenericEventData
-from misc.cfg import EMBED_COLOR
-from misc.utils import set_footer, event_status
+from util.data.templates import GenericEventData
+from util.cfg import EMBED_COLOR
+from util.utils import set_footer, event_status
 from query_stuff import builderQueries
 
 def build_embed(keyword: str, season: int, region: str, event_type: str) -> tuple[discord.Embed, discord.ui.View]:

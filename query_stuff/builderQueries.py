@@ -3,9 +3,9 @@ import json
 import requests
 from types import SimpleNamespace
 
-from misc.data.templates import GenericEventData, AwardCompilation, GenericTeamData
-from misc.data.generation import generate_team_data, generate_event_data, generate_award_data
-from misc.utils import QueryFailException
+from util.data.templates import GenericEventData, AwardCompilation, GenericTeamData
+from util.data.generation import generate_team_data, generate_event_data, generate_award_data
+from util.utils import QueryFailException
 
 
 def _parse_query(query: str) -> SimpleNamespace | None:
@@ -83,6 +83,8 @@ def query_event_awards(event_code: str, season: int) -> AwardCompilation:
     '''
 
     data = _parse_query(query=query)
+
+    
 
     event_awards = data.eventByCode.awards
     awards = [generate_award_data(award) for award in event_awards]

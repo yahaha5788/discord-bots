@@ -3,8 +3,8 @@ from typing import Optional
 import discord
 from discord.ext import commands
 from query_stuff import queries
-from misc.templates import *
-from misc.config import set_footer, EMBED_COLOR, commandattrs, add_app_command
+from util.templates import *
+from util.config import set_footer, EMBED_COLOR, commandattrs, add_app_command
 
 
 class RecordCog(commands.Cog):

@@ -33,7 +33,7 @@ AWARD_DESCRIPTIONS: Final[dict[str, str]] = {
     "innovate": "*The Innovate Award celebrates a team that thinks imaginatively and has the ingenuity, creativity, and inventiveness to make their designs come to life. This judged award is given to the team that has an innovative and creative ROBOT design solution to any specific COMPONENTS in the FIRST Tech Challenge game.*",
     "control": "*The Control Award celebrates a team that uses sensors and software to increase the robot’s functionality during gameplay. This award is given to the team that demonstrates innovative thinking and solutions to solve game challenges such as autonomous operation, improving mechanical systems with intelligent control, or using sensors to achieve better results.*",
     "design": "*The Design Award celebrates the team that demonstrates an understanding of industrial design principles by striking a balance between form, function, and aesthetics while meeting the needs of this season’s challenge. The design process used should result in a robot which is efficiently designed and effectively addresses the game challenge.*",
-    "choice": "*During the competition, the judging panel may meet a team whose unique efforts, performance, or dynamics merit recognition, but does not fit into any of the other award categories. To recognize these unique teams, FIRST offers a Judges’ Choice Award. *"
+    "motivate": "*This team embraces the culture of FIRST and shows what it means to be a team. This team makes a collective effort to make FIRST known throughout their school and community and sparks others to embrace FIRST's culture.*",
 }
 
 SEASON_OPTIONS: Final[list[dict[str, int]]] = [

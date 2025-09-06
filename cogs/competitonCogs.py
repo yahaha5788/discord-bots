@@ -7,8 +7,8 @@ from discord import VoiceChannel
 
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, FTC_LOGO, commandattrs, add_app_command
-from misc.templates import EventDates, MajorQualifyingEvent, event_status
+from util.config import EMBED_COLOR, FTC_LOGO, commandattrs, add_app_command
+from util.templates import EventDates, MajorQualifyingEvent, event_status
 
 
 class CompetitionCog(commands.Cog):

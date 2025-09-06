@@ -6,8 +6,8 @@ from typing import Optional
 
 from query_stuff import queries
 
-from misc.config import EMBED_COLOR, set_footer, commandattrs, add_app_command
-from misc.templates import quickstats_template, add_sponsors
+from util.config import EMBED_COLOR, set_footer, commandattrs, add_app_command
+from util.templates import quickstats_template, add_sponsors
 
 
 class StatsCog(commands.Cog):
