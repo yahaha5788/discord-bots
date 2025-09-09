@@ -40,7 +40,6 @@ def generate_award_data(award) -> GenericAwardData:
         award.placement,
         award.team.name,
         award.team.number,
-        award.type
     )
 
 def generate_team_data(team) -> GenericTeamData:

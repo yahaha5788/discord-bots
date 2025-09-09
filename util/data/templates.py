@@ -43,12 +43,13 @@ class GenericAwardData(NamedTuple):
     second_place_team: GenericTeamData | None
     type: str
 
-class AwardCompilation(NamedTuple):
-    awards: list[GenericAwardData]
-
-    def sortByType(self) -> list[GenericAwardData]:
-        return sorted(self.awards, key=lambda a: a.type.lower())
-
-    def getTeamAwards(self, number: int) -> list[GenericAwardData]:
-        return [award for award in self.awards if award.team_number == number]
-
+class EventAwardData(NamedTuple):
+    inspire: GenericAwardData
+    think: GenericAwardData
+    connect: GenericAwardData
+    reach: GenericAwardData
+    sustain: GenericAwardData
+    innovate: GenericAwardData
+    control: GenericAwardData
+    design: GenericAwardData
+    motivate: GenericAwardData

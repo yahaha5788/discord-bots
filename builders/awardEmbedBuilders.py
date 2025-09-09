@@ -19,13 +19,16 @@ class EventAwardsEmbed:
 
 class AwardEmbed:
     def __init__(self, award: GenericAwardData):
-        self.name = award.team_name
-        self.number = award.team_number
-        self.placement = award.placement
+        self.first = award.first_place_team
+        self.second = award.second_place_team
         self.type = award.type
         self.desc = AWARD_DESCRIPTIONS[award.type.lower()] # raises KeyError if the award type isn't in the dict, used to weed out Winner and Finalist awards among some others
 
     def create(self) -> discord.Embed:
         title = f"{self.type} Award"
 
+        embed = discord.Embed(title=title, description=self.desc)
 
+        embed.add_field(name="Teams", value=f"1st Place: {self.first.number}, {self.first.name}\n2nd Place: {self.second.name}, {self.second.name}")
+
+        return embed
